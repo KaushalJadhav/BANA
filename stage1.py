@@ -18,6 +18,12 @@ def stage1(args):
     datamodule=VOCDataModule(cfg)
     model=LabelerLitModel(cfg)
     wandb_logger.watch(model,log='all')  # logs histogram of gradients and parameters
-    trainer = Trainer(max_steps=cfg.SOLVER.MAX_ITER,max_epochs=-1,logger=wandb_logger,callbacks=[checkpoint_callback_stage1(cfg)],gpus=[int(args.gpu_id)])
+    trainer = Trainer(
+        max_steps=cfg.SOLVER.MAX_ITER,
+        max_epochs=-1,
+        logger=wandb_logger,
+        callbacks=[checkpoint_callback_stage1(cfg)],
+        log_every_n_steps=1,
+        gpus=[int(args.gpu_id)])
     trainer.fit(model,datamodule=datamodule)
     wandb.finish()
