@@ -31,6 +31,6 @@ def checkpoint_callback_stage1(cfg):
     filename='{epoch}-{train_loss:.2f}',   # right now checking based on train_loss
     save_top_k =1,                 # saving best model, if to save the latest one replace by - save_last=True
     mode='min',                     # written for save_top_k
-    every_n_epochs=40,              # after 40 epochs checkpoint saved.
+    every_n_epochs=5,              # after 40 epochs checkpoint saved.
     save_on_train_epoch_end=True   #  to run checkpointing at the end of the training epoch.  
     )

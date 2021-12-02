@@ -65,24 +65,25 @@ class LabelerLitModel(pl.LightningModule):
         self.criterion = nn.CrossEntropyLoss()
         self.interval_verbose = self.cfg.SOLVER.MAX_ITER // 40
         self.backbone=self.model.backbone
-        self.val_losses = []                               # can replace by floats
-        self.avgval_losses = []
-        self.train_losses = []
-        self.avgtrain_losses = []
         self.save_hyperparameters()           # to automatically log hyperparameters to W&B
         self.load_weights(f"./weights/{cfg.MODEL.WEIGHTS}")  # Just loading pre-trained weights
 
-    def training_step(self, batch, batch_idx):
-        if self.cfg.DATA.MODE == "train":
-         sample=batch                       # Need to check whether validation and training to be done at the same time
-         loss = self.common_step(sample)
-         self.train_losses.append(loss.item())
+    def training_step(self, batch, batch_idx):                     
+         loss = self.step(batch)
+         self.log_dict(
+             {"train_loss"=loss},
+             on_step=True,
+             on_epoch=True,
+             prog_bar=True,
+         )
         #  result=pl.TrainResult(loss)
         #  return result
-         return loss 
+         return {
+             "loss":loss
+             }
 
 
-    def common_step(self,sample):
+    def step(self,sample):
         img = sample["img"]
         bboxes = sample["bboxes"]
         bg_mask = sample["bg_mask"]
@@ -95,15 +96,7 @@ class LabelerLitModel(pl.LightningModule):
         target = torch.zeros(logits.shape[0], dtype=torch.long,device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
         target[:fg_t.shape[0]] = fg_t
         loss = self.criterion(logits, target)
-        return loss 
-
-    def training_epoch_end(self,output):
-        self.avgtrain_losses.append(sum(self.train_losses) / len(self.train_losses))
-        self.train_losses=[]
-        if (self.current_epoch+1) % self.interval_verbose ==0:
-            # log
-            self.log("train-average-loss",sum(self.avgtrain_losses) / len(self.avgtrain_losses))
-            self.avgtrain_losses=[] 
+        return loss  
 
     def configure_optimizers(self):
         lr = self.cfg.SOLVER.LR
