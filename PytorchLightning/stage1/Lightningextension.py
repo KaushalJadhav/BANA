@@ -71,7 +71,7 @@ class LabelerLitModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):                     
          loss = self.step(batch)
          self.log_dict(
-             {"train_loss"=loss},
+             {"train_loss":loss},
              on_step=True,
              on_epoch=True,
              prog_bar=True,
