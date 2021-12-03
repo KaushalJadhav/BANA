@@ -94,7 +94,7 @@ class LightningModel(pl.LightningModule):
     
     def training_step(self, batch, batch_idx):
         return None 
-    def validation_step(self, batch, batch_idx): 
+    def test_step(self, batch, batch_idx): 
         # cannot use validation_step
         sample=batch 
         self.common_step(sample)  
