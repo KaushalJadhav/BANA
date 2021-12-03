@@ -23,6 +23,6 @@ def stage2(args):
     wandb_logger.watch(model,log='all')  # logs histogram of gradients and parameters
     trainer = Trainer(gpus=[int(args.gpu_id)],max_epochs=1,logger=wandb_logger,log_every_n_steps=1)
     # logger.info(f"END {cfg.NAME} -->") 
-    trainer.test(model,)
+    trainer.test(model,datamodule.val_dataloader())
     wandb.finish()
 
