@@ -75,7 +75,7 @@ class LightningModel(pl.LightningModule):
         self.classifier_weights=torch.clone(self.model.classifier.weight.data)
         # load checkpoint 
         # need to see whether the function also works on .pt files
-        self.load_weights(f"./weights/{cfg.MODEL.WEIGHTS}")  # Just loading pre-trained weights
+        self.load_weights(f"{cfg.MODEL.WEIGHTS}")  # Just loading pre-trained weights
     
     def DENSE_CRF(self):
         bi_w, bi_xy_std, bi_rgb_std, pos_w, pos_xy_std = self.cfg.MODEL.DCRF
@@ -208,7 +208,7 @@ class LightningModel(pl.LightningModule):
         return Y_crf,Y_ret
     
     def load_weights(self,path):
-        self.model.load_from_checkpoint(path)
+        self.model.load_state_dict(torch.load(path), strict=False)
 
 
 
