@@ -73,7 +73,7 @@ class VOCDataModule(pl.LightningDataModule):
             self.val_dataset, 
             batch_size=self.cfg.DATA.BATCH_SIZE,
             collate_fn=my_collate,
-            shuffle=True,
+            shuffle=False,
             num_workers=4,
             pin_memory=True,
             drop_last=True 
