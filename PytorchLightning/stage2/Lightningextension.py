@@ -92,7 +92,9 @@ class LightningModel(pl.LightningModule):
             save_paths += [os.path.join(sub_folder, "{}.png")]
         return save_paths
     
-    def test_step(self, batch, batch_idx): 
+    def training_step(self, batch, batch_idx):
+        return None 
+    def validation_step(self, batch, batch_idx): 
         # cannot use validation_step
         sample=batch 
         self.common_step(sample)  
@@ -209,7 +211,9 @@ class LightningModel(pl.LightningModule):
     
     def load_weights(self,path):
         self.model.load_state_dict(torch.load(path), strict=False)
-
+    
+    def configure_optimizers(self):
+        return None 
 
 
     
