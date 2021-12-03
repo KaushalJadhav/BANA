@@ -1,5 +1,4 @@
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,6 +7,7 @@ from torch.utils.data import DataLoader
 import data.transforms_bbox as Tr
 from data.voc import VOC_box
 from models.ClsNet import Labeler
+
 
 def my_collate(batch):
     '''
@@ -30,30 +30,54 @@ def my_collate(batch):
     sample["batchID_of_box"] = torch.tensor(batchID_of_box, dtype=torch.long)
     return sample
 
+
 class VOCDataModule(pl.LightningDataModule):
-    def __init__(self,cfg):
+
+    def __init__(self, cfg):
         super().__init__()
         # this line allows to access init params with 'self.hparams' attribute
         # Check whether to save hparams 
         # self.save_hyperparameters(logger=False)      
         # data transformations
-        self.transforms= Tr.Compose([
-        Tr.RandomScale(0.5, 1.5),
-        Tr.ResizeRandomCrop(cfg.DATA.CROP_SIZE), 
-        Tr.RandomHFlip(0.5), 
-        Tr.ColorJitter(0.5,0.5,0.5,0),
-        Tr.Normalize_Caffe(),
+        self.transforms = Tr.Compose([
+            Tr.RandomScale(0.5, 1.5),
+            Tr.ResizeRandomCrop(cfg.DATA.CROP_SIZE), 
+            Tr.RandomHFlip(0.5), 
+            Tr.ColorJitter(0.5,0.5,0.5,0),
+            Tr.Normalize_Caffe(),
         ])
-        # self.dims= Should be the size of each image
-        self.dataset=None
-        self.cfg=cfg 
+        self.dataset = None
+        self.cfg = cfg 
+
     @ property
     def num_classes(self) -> int:
-        return self.cfg.DATA.NUM_CLASSES 
-    def setup(self,stage=None):
-        self.dataset = VOC_box(self.cfg, self.transforms)
+        return self.cfg.DATA.NUM_CLASSES
+
+    def setup(self):
+        self.train_dataset = VOC_box(self.cfg, self.transforms, is_train=True)
+        self.val_dataset = VOC_box(self.cfg, self.transforms, is_train=False)
+
     def train_dataloader(self):
-            return DataLoader(self.dataset, batch_size=self.cfg.DATA.BATCH_SIZE,collate_fn=my_collate,shuffle=True,num_workers=4,pin_memory=True,drop_last=True )
+        return DataLoader(
+            self.train_dataset, 
+            batch_size=self.cfg.DATA.BATCH_SIZE,
+            collate_fn=my_collate,
+            shuffle=True,
+            num_workers=4,
+            pin_memory=True,
+            drop_last=True 
+        )
+
+    def val_dataloader(self):
+        return DataLoader(
+            self.val_dataset, 
+            batch_size=self.cfg.DATA.BATCH_SIZE,
+            collate_fn=my_collate,
+            shuffle=True,
+            num_workers=4,
+            pin_memory=True,
+            drop_last=True 
+        )
 
 
 class LabelerLitModel(pl.LightningModule):
@@ -65,25 +89,33 @@ class LabelerLitModel(pl.LightningModule):
         self.criterion = nn.CrossEntropyLoss()
         self.interval_verbose = self.cfg.SOLVER.MAX_ITER // 40
         self.backbone=self.model.backbone
+        self.val_losses = []                               # can replace by floats
+        self.avgval_losses = []
+        self.train_losses = []
+        self.avgtrain_losses = []
         self.save_hyperparameters()           # to automatically log hyperparameters to W&B
+        # load checkpoint 
+        # need to see whether the function also works on .pt files
         self.load_weights(f"./weights/{cfg.MODEL.WEIGHTS}")  # Just loading pre-trained weights
 
-    def training_step(self, batch, batch_idx):                     
-         loss = self.step(batch)
-         self.log_dict(
-             {"train_loss":loss},
-             on_step=True,
-             on_epoch=True,
-             prog_bar=True,
-         )
-        #  result=pl.TrainResult(loss)
-        #  return result
-         return {
-             "loss":loss
-             }
+    def training_step(self, batch, batch_idx):
+        if self.cfg.DATA.MODE == "train":
+         sample=train_batch                      # Need to check whether validation and training to be done at the same time
+         loss = common_step(sample)
+         self.train_losses.append(loss.item())
+         result=pl.TrainResult(loss)
+         return result
 
+    def validation_step(self, batch, batch_idx):
+        if self.cfg.DATA.MODE == "val":
+             #to do... right now kept same as train
+             sample=val_batch                      # Need to check whether validation and training to be done at the same time
+             loss = common_step(sample)
+             self.val_losses.append(loss.item())
+             result=pl.EvalResult(loss)
+             return result
 
-    def step(self,sample):
+    def common_step(sample):
         img = sample["img"]
         bboxes = sample["bboxes"]
         bg_mask = sample["bg_mask"]
@@ -93,10 +125,39 @@ class LabelerLitModel(pl.LightningModule):
         logits = logits[...,0,0]
         fg_t = bboxes[:,-1][:,None].expand(bboxes.shape[0], np.prod(self.cfg.MODEL.ROI_SIZE))
         fg_t = fg_t.flatten().long()
-        target = torch.zeros(logits.shape[0], dtype=torch.long,device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+        target = torch.zeros(logits.shape[0], dtype=torch.long)
         target[:fg_t.shape[0]] = fg_t
         loss = self.criterion(logits, target)
-        return loss  
+        return loss 
+
+    def validation_epoch_end(self, outputs):
+        self.avgval_losses.append(sum(self.val_losses) / len(self.val_losses))
+        self.val_losses=[]
+        if self.current_epoch()+1 % self.interval_verbose ==0:
+            # log
+            self.log("val-average-loss",sum(self.avgval_losses) / len(self.avgval_losses))
+            self.avgval_losses=[]
+
+    def training_epoch_end(self, outputs):
+        self.avgtrain_losses.append(sum(self.train_losses) / len(self.train_losses))
+        self.train_losses=[]
+        if self.current_epoch()+1 % self.interval_verbose ==0:
+            # log
+            self.log("train-average-loss",sum(self.avgtrain_losses) / len(self.avgtrain_losses))
+            self.avgtrain_losses=[] 
+    
+    def test_step(self, batch, batch_idx):
+        if self.cfg.DATA.MODE == "val":
+             #to do... right now kept same as validation
+             sample=val_batch                      # Need to check this
+             loss = common_step(sample)
+             result=pl.EvalResult(loss)
+             # ADD LOGGER-
+             return result
+    
+    def test_epoch_end(self, outputs):
+        # to do
+        pass
 
     def configure_optimizers(self):
         lr = self.cfg.SOLVER.LR
@@ -114,11 +175,11 @@ class LabelerLitModel(pl.LightningModule):
         "interval": "step",
         "frequency": 1,
         # Metric to to monitor for schedulers like `ReduceLROnPlateau`
-        "monitor": "train_loss", 
+        "monitor": "train_loss" if self.cfg.DATA.MODE == "train" else "val_loss",
         "strict": True,
         "name": None,
         }
         return { "optimizer": optimizer,"lr_scheduler":lr_scheduler }
     
     def load_weights(self,path):
-        self.backbone.load_state_dict(torch.load(path), strict=False)
+        self.backbone.load_from_checkpoint(path)
