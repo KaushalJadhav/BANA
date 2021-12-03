@@ -58,8 +58,7 @@ class VOCDataModule(pl.LightningDataModule):
         # Not needed
         pass 
     def setup(self,stage=None):
-        # Not needed
-        pass 
+        self.dataset=VOC_box(self.cfg,self.transforms) 
     def train_dataloader(self):
         return DataLoader(self.dataset, batch_size=1,collate_fn=my_collate)
     def val_dataloader(self):
