@@ -92,7 +92,7 @@ class LightningModel(pl.LightningModule):
             save_paths += [os.path.join(sub_folder, "{}.png")]
         return save_paths
     
-    def training_step(self, batch, batch_idx): 
+    def validation_step(self, batch, batch_idx): 
         # check for validation/testing
         sample=batch 
         self.common_step(sample)  
