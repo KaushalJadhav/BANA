@@ -36,7 +36,7 @@ class VOC_box(Dataset):
     def __init__(self, cfg, transforms=None, is_train=True):
         if is_train:
             txt_name = "train.txt"    # check this
-        else
+        else:
             txt_name = "val.txt"
 
         f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)

@@ -104,6 +104,18 @@ class LabelerLitModel(pl.LightningModule):
             "loss":loss
         }
 
+    def validation_step(self, batch, batch_idx):                     
+        loss = self.step(batch)
+        self.log_dict(
+            {"val_loss":loss},
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        return {
+            "val_loss":loss
+        }
+
     def step(self,sample):
         img = sample["img"]
         bboxes = sample["bboxes"]
