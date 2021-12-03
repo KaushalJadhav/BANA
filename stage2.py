@@ -9,6 +9,9 @@ from pytorch_lightning.loggers import WandbLogger
 
 #logger = logging.getLogger("stage2")
 
+wandb_logger = WandbLogger(project='BANA', # group runs in "BANA" project
+                           log_model='all') # log all new checkpoints during training
+
 def stage2(args):
     wandb.login()
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
