@@ -1,4 +1,5 @@
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
 import numpy as np
 import torch
 import torch.nn as nn
@@ -32,8 +33,7 @@ def my_collate(batch):
 
 
 class VOCDataModule(pl.LightningDataModule):
-
-    def __init__(self, cfg):
+    def __init__(self,cfg):
         super().__init__()
         # this line allows to access init params with 'self.hparams' attribute
         # Check whether to save hparams 
@@ -46,16 +46,15 @@ class VOCDataModule(pl.LightningDataModule):
             Tr.ColorJitter(0.5,0.5,0.5,0),
             Tr.Normalize_Caffe(),
         ])
-        self.dataset = None
         self.cfg = cfg 
 
     @ property
     def num_classes(self) -> int:
-        return self.cfg.DATA.NUM_CLASSES
+        return self.cfg.DATA.NUM_CLASSES 
 
-    def setup(self):
-        self.train_dataset = VOC_box(self.cfg, self.transforms, is_train=True)
-        self.val_dataset = VOC_box(self.cfg, self.transforms, is_train=False)
+    def setup(self,stage=None):
+        self.train_dataset = VOC_box(self.cfg, self.transforms, True)
+        self.val_dataset = VOC_box(self.cfg, self.transforms, False)
 
     def train_dataloader(self):
         return DataLoader(
@@ -81,41 +80,31 @@ class VOCDataModule(pl.LightningDataModule):
 
 
 class LabelerLitModel(pl.LightningModule):
+
     def __init__(self,cfg):
         super().__init__()
-        self.model=Labeler(cfg.DATA.NUM_CLASSES, cfg.MODEL.ROI_SIZE, cfg.MODEL.GRID_SIZE)
-        self.cfg=cfg
+        self.model = Labeler(cfg.DATA.NUM_CLASSES, cfg.MODEL.ROI_SIZE, cfg.MODEL.GRID_SIZE)
+        self.cfg = cfg
         self.params = self.model.get_params()
         self.criterion = nn.CrossEntropyLoss()
         self.interval_verbose = self.cfg.SOLVER.MAX_ITER // 40
-        self.backbone=self.model.backbone
-        self.val_losses = []                               # can replace by floats
-        self.avgval_losses = []
-        self.train_losses = []
-        self.avgtrain_losses = []
+        self.backbone = self.model.backbone
         self.save_hyperparameters()           # to automatically log hyperparameters to W&B
-        # load checkpoint 
-        # need to see whether the function also works on .pt files
         self.load_weights(f"./weights/{cfg.MODEL.WEIGHTS}")  # Just loading pre-trained weights
 
-    def training_step(self, batch, batch_idx):
-        if self.cfg.DATA.MODE == "train":
-         sample=train_batch                      # Need to check whether validation and training to be done at the same time
-         loss = common_step(sample)
-         self.train_losses.append(loss.item())
-         result=pl.TrainResult(loss)
-         return result
+    def training_step(self, batch, batch_idx):                     
+        loss = self.step(batch)
+        self.log_dict(
+            {"train_loss":loss},
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        return {
+            "loss":loss
+        }
 
-    def validation_step(self, batch, batch_idx):
-        if self.cfg.DATA.MODE == "val":
-             #to do... right now kept same as train
-             sample=val_batch                      # Need to check whether validation and training to be done at the same time
-             loss = common_step(sample)
-             self.val_losses.append(loss.item())
-             result=pl.EvalResult(loss)
-             return result
-
-    def common_step(sample):
+    def step(self,sample):
         img = sample["img"]
         bboxes = sample["bboxes"]
         bg_mask = sample["bg_mask"]
@@ -125,61 +114,45 @@ class LabelerLitModel(pl.LightningModule):
         logits = logits[...,0,0]
         fg_t = bboxes[:,-1][:,None].expand(bboxes.shape[0], np.prod(self.cfg.MODEL.ROI_SIZE))
         fg_t = fg_t.flatten().long()
-        target = torch.zeros(logits.shape[0], dtype=torch.long)
+        target = torch.zeros(logits.shape[0], dtype=torch.long,device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
         target[:fg_t.shape[0]] = fg_t
         loss = self.criterion(logits, target)
-        return loss 
-
-    def validation_epoch_end(self, outputs):
-        self.avgval_losses.append(sum(self.val_losses) / len(self.val_losses))
-        self.val_losses=[]
-        if self.current_epoch()+1 % self.interval_verbose ==0:
-            # log
-            self.log("val-average-loss",sum(self.avgval_losses) / len(self.avgval_losses))
-            self.avgval_losses=[]
-
-    def training_epoch_end(self, outputs):
-        self.avgtrain_losses.append(sum(self.train_losses) / len(self.train_losses))
-        self.train_losses=[]
-        if self.current_epoch()+1 % self.interval_verbose ==0:
-            # log
-            self.log("train-average-loss",sum(self.avgtrain_losses) / len(self.avgtrain_losses))
-            self.avgtrain_losses=[] 
-    
-    def test_step(self, batch, batch_idx):
-        if self.cfg.DATA.MODE == "val":
-             #to do... right now kept same as validation
-             sample=val_batch                      # Need to check this
-             loss = common_step(sample)
-             result=pl.EvalResult(loss)
-             # ADD LOGGER-
-             return result
-    
-    def test_epoch_end(self, outputs):
-        # to do
-        pass
+        return loss  
 
     def configure_optimizers(self):
+
         lr = self.cfg.SOLVER.LR
         wd = self.cfg.SOLVER.WEIGHT_DECAY
+
         optimizer = optim.SGD(
-        [{"params":self.params[0], "lr":lr,    "weight_decay":wd},
-         {"params":self.params[1], "lr":2*lr,  "weight_decay":0 },
-         {"params":self.params[2], "lr":10*lr, "weight_decay":wd},
-         {"params":self.params[3], "lr":20*lr, "weight_decay":0 }], 
-        momentum=self.cfg.SOLVER.MOMENTUM
+            [
+                {"params":self.params[0], "lr":lr,    "weight_decay":wd},
+                {"params":self.params[1], "lr":2*lr,  "weight_decay":0 },
+                {"params":self.params[2], "lr":10*lr, "weight_decay":wd},
+                {"params":self.params[3], "lr":20*lr, "weight_decay":0 }
+            ], 
+            momentum=self.cfg.SOLVER.MOMENTUM
         )
+
         lr_scheduler = {
-        "scheduler": optim.lr_scheduler.MultiStepLR(optimizer, milestones=self.cfg.SOLVER.MILESTONES, gamma=0.1),
-        # 'epoch' updates the scheduler on epoch end whereas 'step' updates it after a optimizer update.
-        "interval": "step",
-        "frequency": 1,
-        # Metric to to monitor for schedulers like `ReduceLROnPlateau`
-        "monitor": "train_loss" if self.cfg.DATA.MODE == "train" else "val_loss",
-        "strict": True,
-        "name": None,
+            "scheduler": optim.lr_scheduler.MultiStepLR(
+                optimizer, 
+                milestones=self.cfg.SOLVER.MILESTONES, 
+                gamma=0.1
+                ),
+            # 'epoch' updates the scheduler on epoch end whereas 'step' updates it after a optimizer update.
+            "interval": "step",
+            "frequency": 1,
+            # Metric to to monitor for schedulers like `ReduceLROnPlateau`
+            "monitor": "train_loss", 
+            "strict": True,
+            "name": None,
         }
-        return { "optimizer": optimizer,"lr_scheduler":lr_scheduler }
+
+        return { 
+            "optimizer": optimizer,
+            "lr_scheduler":lr_scheduler 
+        }
     
     def load_weights(self,path):
-        self.backbone.load_from_checkpoint(path)
+        self.backbone.load_state_dict(torch.load(path), strict=False)

@@ -1,4 +1,4 @@
-import pytorch-lightning as pl
+import pytorch_lightning as pl
 import os
 import collections
 import numpy as np
@@ -35,10 +35,10 @@ CLASSES = (
 class VOC_box(Dataset):
     def __init__(self, cfg, transforms=None, is_train=True):
         if is_train:
-            txt_name = "train_aug.txt"
-        else :
+            txt_name = "train.txt"    # check this
+        else
             txt_name = "val.txt"
-        
+
         f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)
         self.filenames  = [x.split('\n')[0] for x in open(f_path)]
         self.transforms = transforms
