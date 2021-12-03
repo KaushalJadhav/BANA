@@ -57,7 +57,7 @@ class VOCDataModule(pl.LightningDataModule):
     def prepare_data(self):
         # Not needed
         pass 
-    def setup(self):
+    def setup(self,stage=None):
         # Not needed
         pass 
     def train_dataloader(self):
