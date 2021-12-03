@@ -1,7 +1,7 @@
 NAME: "Generation"
 SAVE_PSEUDO_LABLES: True
 
-SEED: 13
+SEED: 0
 
 DATA: 
   ROOT: "/content/VOCdevkit/VOC2012"
