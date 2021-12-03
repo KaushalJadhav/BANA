@@ -34,6 +34,7 @@ CLASSES = (
 # stage-1
 class VOC_box(Dataset):
     def __init__(self, cfg, transforms=None, is_train=True):
+        print("loading dataset")
         if is_train:
             txt_name = "train.txt"    # check this
         else:
