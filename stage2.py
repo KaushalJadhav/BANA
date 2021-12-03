@@ -8,7 +8,7 @@ import wandb
 
 #logger = logging.getLogger("stage2")
 
-def stage2(cfg):
+def stage2(args):
     wandb.login()
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
     cfg=process_cfg(args.config_file)
@@ -19,4 +19,6 @@ def stage2(cfg):
     wandb_logger.watch(model,log='all')  # logs histogram of gradients and parameters
     trainer = Trainer(gpus=[int(args.gpu_id)])
     # logger.info(f"END {cfg.NAME} -->") 
+    trainer.fit(model,datamodule=datamodule)
+    wandb.finish()
 
