@@ -17,7 +17,7 @@ def stage2(args):
     model=LightningModel(cfg)
     # logger.info(f"START {cfg.NAME} -->")
     wandb_logger.watch(model,log='all')  # logs histogram of gradients and parameters
-    trainer = Trainer(gpus=[int(args.gpu_id)])
+    trainer = Trainer(gpus=[int(args.gpu_id)],max_epochs=1)
     # logger.info(f"END {cfg.NAME} -->") 
     trainer.fit(model,datamodule=datamodule)
     wandb.finish()
