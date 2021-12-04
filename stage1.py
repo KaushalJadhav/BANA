@@ -22,7 +22,7 @@ def stage1(args):
     wandb_logger.watch(model,log='all')  # logs histogram of gradients and parameters
     if args.resume is not "None":
         trainer = Trainer(
-        max_steps=10,
+        max_steps=args.step,
         max_epochs=-1,
         logger=wandb_logger,
         callbacks=[checkpoint_callback_stage1(cfg)],
