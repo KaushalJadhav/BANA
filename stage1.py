@@ -8,7 +8,9 @@ import wandb
 
 
 wandb_logger = WandbLogger(project='BANA', # group runs in "BANA" project
-                           log_model='all') # log all new checkpoints during training
+                           log_model='all', # log all new checkpoints during training
+                           id='BANA-stage-1',
+                           resume='allow')
 
 def stage1(args):
     wandb.login()
@@ -18,8 +20,18 @@ def stage1(args):
     datamodule=VOCDataModule(cfg)
     model=LabelerLitModel(cfg)
     wandb_logger.watch(model,log='all')  # logs histogram of gradients and parameters
-    trainer = Trainer(
-        max_steps=cfg.SOLVER.MAX_ITER,
+    if args.resume is not "None":
+        trainer = Trainer(
+        max_steps=10,
+        max_epochs=-1,
+        logger=wandb_logger,
+        callbacks=[checkpoint_callback_stage1(cfg)],
+        log_every_n_steps=1,
+        gpus=[int(args.gpu_id)],
+        resume_from_checkpoint=args.resume)
+    else:
+        trainer = Trainer(
+        max_steps=10,
         max_epochs=-1,
         logger=wandb_logger,
         callbacks=[checkpoint_callback_stage1(cfg)],
