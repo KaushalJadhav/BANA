@@ -25,6 +25,7 @@ def get_args():
     parser.add_argument("--stage", type=str, default="1", help="select stage")
     parser.add_argument("--gpu-id", type=str, default="0", help="select a GPU index")
     parser.add_argument("--resume", type=str, default="None", help="filename of the checkpoint")
+    parser.add_argument("--resume", type=int, default=10, help="Number of steps")
     return parser.parse_args()
 
 def checkpoint_callback_stage1(cfg):
