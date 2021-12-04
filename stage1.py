@@ -9,7 +9,7 @@ import wandb
 
 wandb_logger = WandbLogger(project='BANA', # group runs in "BANA" project
                            log_model='all', # log all new checkpoints during training
-                           id='MLRC-BANA-stage-1',
+                           id='testing',
                            resume='allow')
 
 def stage1(args):
@@ -28,7 +28,7 @@ def stage1(args):
         callbacks=[checkpoint_callback_stage1(cfg)],
         log_every_n_steps=1,
         gpus=[int(args.gpu_id)],
-        resume_from_checkpoint=f"cfg.NAME/{args.resume}")
+        resume_from_checkpoint=f"{cfg.NAME}/{args.resume}")
     else:
         trainer = Trainer(
         max_steps=args.step,
