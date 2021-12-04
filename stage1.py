@@ -9,7 +9,7 @@ import wandb
 
 wandb_logger = WandbLogger(project='BANA', # group runs in "BANA" project
                            log_model='all', # log all new checkpoints during training
-                           id='test',
+                           id='BANA-stage-1',
                            resume='allow')
 
 def stage1(args):
@@ -22,8 +22,8 @@ def stage1(args):
     wandb_logger.watch(model,log='all')  # logs histogram of gradients and parameters
     if args.resume is not "None":
         trainer = Trainer(
-        max_steps=args.step,
-        max_epochs=-1,
+        max_steps=cfg.SOLVER.MAX_ITER,
+        max_epochs=args.epoch,
         logger=wandb_logger,
         callbacks=[checkpoint_callback_stage1(cfg)],
         log_every_n_steps=1,
@@ -31,8 +31,8 @@ def stage1(args):
         resume_from_checkpoint=f"{cfg.NAME}/{args.resume}")
     else:
         trainer = Trainer(
-        max_steps=args.step,
-        max_epochs=-1,
+        max_steps=cfg.SOLVER.MAX_ITER,
+        max_epochs=args.epoch,
         logger=wandb_logger,
         callbacks=[checkpoint_callback_stage1(cfg)],
         log_every_n_steps=1,

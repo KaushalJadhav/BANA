@@ -25,16 +25,16 @@ def get_args():
     parser.add_argument("--stage", type=str, default="1", help="select stage")
     parser.add_argument("--gpu-id", type=str, default="0", help="select a GPU index")
     parser.add_argument("--resume", type=str, default="None", help="filename of the checkpoint")
-    parser.add_argument("--step", type=int, default=10, help="Number of steps")
+    parser.add_argument("--epoch", type=int, default=5, help="Number of epoch")
     return parser.parse_args()
 
 def checkpoint_callback_stage1(cfg):
     return ModelCheckpoint(
     dirpath=f"{cfg.NAME}",    
-    filename='{epoch}-{train_loss:.2f}',   # right now checking based on train_loss
+    filename='{epoch}-{step}-{train_loss:.2f}',   # right now checking based on train_loss
     save_last=True,
     save_top_k =1,
     mode='min',                     # written for save_top_k
-    every_n_train_steps=10,              # after 40 epochs checkpoint saved.
-    save_on_train_epoch_end=False   #  to run checkpointing at the end of the training epoch.  
+    every_n_epochs=5,              # after 5 epochs checkpoint saved.
+    save_on_train_epoch_end=True   #  to run checkpointing at the end of the training epoch.  
     )
