@@ -9,7 +9,7 @@ import wandb
 
 wandb_logger = WandbLogger(project='BANA', # group runs in "BANA" project
                            log_model='all', # log all new checkpoints during training
-                           id='BANA-stage1', 
+                           id='give_name', 
                            resume='allow')
 
 def stage1(args):
