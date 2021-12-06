@@ -37,5 +37,6 @@ def checkpoint_callback_stage1(cfg,epoch):
     save_top_k =1,
     mode='min',                     # written for save_top_k
     every_n_epochs=epoch,              # after 5 epochs checkpoint saved.
+    every_n_train_steps=44,           # TEMPORARY CHANGE
     save_on_train_epoch_end=True   #  to run checkpointing at the end of the training epoch.  
     )
