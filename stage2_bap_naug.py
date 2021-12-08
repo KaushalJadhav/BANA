@@ -35,7 +35,7 @@ def main(cfg):
     model = Labeler(cfg.DATA.NUM_CLASSES, cfg.MODEL.ROI_SIZE, cfg.MODEL.GRID_SIZE).cuda()
 
     # Restore the model saved on WandB
-    model_stage_1 = wandb.restore('weights/ClsNet.pt', run_path='dl-segmentation/MLRC-BANA/3tlmc1pv')
+    model_stage_1 = wandb.restore('weights/ClsNet.pt', run_path='dl-segmentation/MLRC-BANA/3gmasxud')
     model.load_state_dict(torch.load(model_stage_1.name))
 
     WEIGHTS = torch.clone(model.classifier.weight.data)
@@ -109,16 +109,20 @@ def main(cfg):
             # CAMS for background classes (ub)
             w_c_bg = WEIGHTS[0][None]
             raw_cam_bg = F.relu(torch.sum(w_c_bg*features, dim=1)) # (1,H,W)
-            normed_cam_bg = (raw_cam_bg / raw_cam_bg.max()).detach().cpu()
-            unary_u0 = torch.cat((normed_cam_bg, Fg_unary), dim=0)
+            normed_cam_bg = raw_cam_bg.clone().detach()
+            for uni_cls in gt_labels:
+              for wmin,hmin,wmax,hmax,_ in bboxes[bboxes[:,4]==uni_cls]:
+                normed_cam_bg[:,hmin:hmax,wmin:wmax] = 0
+            normed_cam_bg = (normed_cam_bg / normed_cam_bg.max()).detach().cpu()
 
 
             # Final unary by contacinating foreground and background unaries
-            unary = torch.cat((Bg_unary,Fg_unary), dim=0)
+            unary = torch.cat((Bg_unary, Fg_unary), dim=0)
             unary[:,region_inside_bboxes] = torch.softmax(unary[:,region_inside_bboxes], dim=0)
             refined_unary = dCRF.inference(rgb_img, unary.numpy())
 
             # Unary witout background attn
+            unary_u0 = torch.cat((normed_cam_bg, Fg_unary), dim=0)
             unary_u0[:, region_inside_bboxes] = torch.softmax(unary_u0[:, region_inside_bboxes], dim=0)
             refined_unary_u0 = dCRF.inference(rgb_img, unary_u0.numpy())
             
