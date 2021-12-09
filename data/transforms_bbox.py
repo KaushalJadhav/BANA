@@ -6,6 +6,9 @@ from PIL import Image
 import torchvision.transforms.functional as TF
 
 def clip_bbox(bbox, clip_coord):
+    '''
+    
+    '''
     wmin, hmin, wmax, hmax = clip_coord
     # get rid of out of cropped region
     invalid = (bbox[:,0] >= wmax) | (bbox[:,1] >= hmax) | (bbox[:,2] <= wmin) | (bbox[:,3] <= hmin)
@@ -26,7 +29,8 @@ def clip_bbox(bbox, clip_coord):
 
 class Compose():
     '''
-    transforms : List of transforms for Image and Bboxes
+    Args:
+         transforms (List): List of transforms for Image and Bboxes
     '''
     def __init__(self, transforms):
         self.transforms = transforms
@@ -39,9 +43,9 @@ class Compose():
 
 class RandomScale():
     '''
-    img     : (H, W, 3) numpy float32
-    bboxes  : (wmin, hmin, wmax, hmax, cls) N x 5 numpy float32
-    bg_mask : (H, W) numpy int64
+    img (numpy float32): image of shape(H, W, 3) 
+    bboxes (numpy float32): array of coordinates (wmin, hmin, wmax, hmax, cls) of shape(N x 5)
+    bg_mask (numpy int32): background mask of shape(H, W) 
     '''
     def __init__(self, scale_min, scale_max):
         self.s_min = scale_min
@@ -59,9 +63,9 @@ class RandomScale():
 
 class RandomHFlip():
     '''
-    img    : (H, W, 3) numpy float32
-    bboxes : (wmin, hmin, wmax, hmax, cls) N x 5 numpy float32
-    bg_mask : (H, W) numpy int32
+    img (numpy float32): image of shape(H, W, 3) 
+    bboxes (numpy float32): array of coordinates (wmin, hmin, wmax, hmax, cls) of shape(N x 5) 
+    bg_mask (numpy int32): background mask of shape(H, W)
     '''
     def __init__(self, p=0.5):
         self.p = p
@@ -82,9 +86,9 @@ class RandomHFlip():
 
 class ResizeRandomCrop():
     '''
-    img    : (H, W, 3) numpy float32
-    bboxes : (wmin, hmin, wmax, hmax, cls) N x 5 numpy float32
-    bg_mask : (H, W) numpy int32
+    img (numpy float32): image of shape(H, W, 3) 
+    bboxes (numpy float32): array of coordinates (wmin, hmin, wmax, hmax, cls) of shape(N x 5) 
+    bg_mask (numpy int32): background mask of shape(H, W)
     '''
     def __init__(self, crop_size):
         self.crop_size = crop_size
@@ -122,9 +126,9 @@ class ResizeRandomCrop():
 
 class ColorJitter():
     '''
-    img    : (H,W,3) numpy float32
-    bboxes : (K,5) numpy float32
-    bg_mask : (H, W) numpy int32
+    img (numpy float32): image of shape(H, W, 3) 
+    bboxes (numpy float32): array of coordinates (wmin, hmin, wmax, hmax, cls) of shape(K x 5) 
+    bg_mask (numpy int32): background mask of shape(H, W)
     '''
     def __init__(self, brightness, contrast, saturation, hue):
         self.brit = brightness
@@ -152,13 +156,14 @@ class ColorJitter():
 
 class Normalize_Caffe():
     '''
-    img    : (H,W,3) numpy float32
-    bboxes : (K,5) numpy float32
-    bg_mask : (H, W) numpy int32
-    -----
-    return (new)     : (3,H,W) tensor float32 
-    return (bboxes)  : (K,5) tensor float32
-    return (bg_mask) : (H,W) tensor float32
+    Args:
+         img_RGB (numpy float32)  : image in RGB format of shape (H,W,3) 
+         bboxes (numpy float32) : bounding boxes array of shape (K,5) 
+         bg_mask (numpy int32) : background mask of shape (H, W) 
+    Returns:
+             img (tensor float32): normalised image of shape (3,H,W)  
+             bboxes (tensor float32) : normalised bounding boxes of shape (K,5) 
+             bg_mask (tensor float32) : normalised background mask (H,W) 
     '''
     def __init__(self, mean=(122.675, 116.669, 104.008)):
         self.mean = mean

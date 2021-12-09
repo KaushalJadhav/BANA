@@ -20,12 +20,19 @@ import torch.nn.functional as F
 # except:
 #     _BATCH_NORM = nn.BatchNorm2d
 
-_BOTTLENECK_EXPANSION = 4
-
 
 class _ConvBnReLU(nn.Sequential):
     """
     Cascade of 2D convolution, batch norm, and ReLU.
+    Args:
+         in_ch (int): Number of channels in the input image
+         norm_type : Type of Batch Normalisation
+         out_ch (int): Number of channels produced by the convolution
+         kernel_size (int or tuple): Size of the convolving kernel
+         stride (int or tuple,): Stride of the convolution.
+         padding (int, tuple or str,) : Padding added to all four sides of the input.
+         dilation (int or tuple,): Spacing between kernel elements.
+         relu (bool,optional) : If True nn.ReLU activation function used. Default:True
     """
 #     BATCH_NORM = _BATCH_NORM
     def __init__(self, in_ch, norm_type, out_ch, kernel_size, stride, padding, dilation, relu=True):
@@ -44,10 +51,18 @@ class _ConvBnReLU(nn.Sequential):
 class _Bottleneck(nn.Module):  # check whether it is pl.LightningModule
     """
     Bottleneck block of MSRA ResNet.
+    Args:
+         in_ch (int): Number of channels in the input image
+         norm_type : Type of Batch Normalisation
+         out_ch (int): Number of channels produced by the convolution
+         stride (int or tuple,): Stride of the convolution.
+         dilation (int or tuple,): Spacing between kernel elements.
+         downsample(bool) : if True downsampling used in shortcut connection else identity mapping used
     """
     def __init__(self, in_ch, norm_type, out_ch, stride, dilation, downsample):
         super(_Bottleneck, self).__init__()
-        mid_ch = out_ch // _BOTTLENECK_EXPANSION
+        self._BOTTLENECK_EXPANSION=4
+        mid_ch = out_ch // self._BOTTLENECK_EXPANSION
         self.reduce = _ConvBnReLU(in_ch, norm_type, mid_ch, 1, stride, 0, 1, True)
         self.conv3x3 = _ConvBnReLU(mid_ch, norm_type, mid_ch, 3, 1, dilation, dilation, True)
         self.increase = _ConvBnReLU(mid_ch, norm_type, out_ch, 1, 1, 0, 1, False)
@@ -57,6 +72,12 @@ class _Bottleneck(nn.Module):  # check whether it is pl.LightningModule
             else lambda x: x  # identity
         )
     def forward(self, x):
+        '''
+        Args:
+             x (torch.Tensor): input images
+        Returns:
+             output feature map
+        '''
         h = self.reduce(x)
         h = self.conv3x3(h)
         h = self.increase(h)
@@ -67,6 +88,14 @@ class _Bottleneck(nn.Module):  # check whether it is pl.LightningModule
 class _ResLayer(nn.Sequential):
     """
     Residual layer with multi grids
+    Args:
+         n_layers (int): Number of convolutional layers
+         in_ch (int): Number of channels in the input image
+         norm_type : Type of Batch Normalisation
+         out_ch (int): Number of channels produced by the convolution
+         stride (int or tuple,): Stride of the convolution.
+         dilation (int or tuple,): Spacing between kernel elements.
+         multi_grids (any, optional) : List/ Array of grid values. Default:None
     """
     def __init__(self, n_layers, in_ch, norm_type, out_ch, stride, dilation, multi_grids=None):
         super(_ResLayer, self).__init__()
@@ -94,6 +123,9 @@ class _Stem(nn.Sequential):
     """
     The 1st conv layer.
     Note that the max pooling is different from both MSRA and FAIR ResNet.
+    Args:
+         norm_type : Type of Batch Normalisation
+         out_ch (int): Number of channels produced by the convolution
     """
     def __init__(self, norm_type, out_ch):
         super(_Stem, self).__init__()
@@ -101,14 +133,24 @@ class _Stem(nn.Sequential):
         self.add_module("pool", nn.MaxPool2d(3, 2, 1, ceil_mode=True))
 
 
-class _Flatten(pl.LightningModule):
+class _Flatten(nn.Module):
     def __init__(self):
         pass 
     def forward(self, x):
+        '''
+        Args:
+             x (torch.Tensor): Input
+        Returns:
+             Flattened input
+        '''
         return x.view(x.size(0), -1)
 
 
 class RES101(nn.Sequential):
+    '''
+    Args:
+         sync_bn (Bool): If True nn.SyncBatchNorm used else nn.BatchNorm2d used
+    '''
     def __init__(self, sync_bn):
         super().__init__()
         if sync_bn:
@@ -132,6 +174,11 @@ class RES101(nn.Sequential):
                 m.eval()
 
     def forward(self, x, return_feature_maps=False):
+        '''
+        Args:
+         x (torch.Tensor): Input
+         return_feature_maps (Bool,optional): if True returns list of features extracted from each layer else returns 
+        '''
         conv_out = []
         x = self.layer1(x)
         x = self.layer2(x); conv_out.append(x);

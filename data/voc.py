@@ -6,37 +6,19 @@ import xml.etree.ElementTree as ET
 from PIL import Image
 from torch.utils.data import Dataset,DataLoader
 
-
-CLASSES = (
-    "background", 
-    "aeroplane", 
-    "bicycle", 
-    "bird", 
-    "boat", 
-    "bottle", 
-    "bus", 
-    "car", 
-    "cat", 
-    "chair", 
-    "cow", 
-    "diningtable", 
-    "dog", 
-    "horse", 
-    "motorbike",
-    "person",
-    "pottedplant", 
-    "sheep",
-    "sofa", 
-    "train",
-    "tvmonitor"
-)
-
 # stage-1
 class VOC_box(Dataset):
+    '''
+    loads VOC dataset 
+    Args:
+         cfg  : parameters loaded from config file 
+         transforms (List): transforms to be applied to images
+         is_train (bool): train dataset loaded if True else val dataset loaded. Default: True
+    ''' 
     def __init__(self, cfg, transforms=None, is_train=True):
-        print("loading dataset")
+        print("loading dataset from {cfg.DATA.ROOT}")
         if is_train:
-            txt_name = "train.txt"    # check this
+            txt_name = "train.txt" 
         else:
             txt_name = "val.txt"
 
@@ -47,11 +29,10 @@ class VOC_box(Dataset):
         self.img_path  = os.path.join(cfg.DATA.ROOT, 'JPEGImages/{}.jpg')
         self.xml_path  = os.path.join(cfg.DATA.ROOT, 'Annotations/{}.xml')
         self.mask_path = os.path.join(cfg.DATA.ROOT, 'BgMaskfromBoxes/{}.png')
-        
-        self.len = len(self.filenames)
+        self.CLASSES=self.get_classes()
     
     def __len__(self):
-        return self.len
+        return len(self.filenames)
     
     def __getitem__(self, index):
         fn  = self.filenames[index]
@@ -80,8 +61,45 @@ class VOC_box(Dataset):
             if not children:
                 voc_dict[node.tag] = text
         return voc_dict
+    
+    def get_classes(self):
+        '''
+        Returns:
+                 CLASSES (tuple): list of class names
+        '''
+        CLASSES = (
+            "background", 
+            "aeroplane", 
+            "bicycle", 
+            "bird", 
+            "boat", 
+            "bottle", 
+            "bus", 
+            "car", 
+            "cat", 
+            "chair", 
+            "cow", 
+            "diningtable", 
+            "dog", 
+            "horse", 
+            "motorbike",
+            "person",
+            "pottedplant", 
+            "sheep",
+            "sofa", 
+            "train",
+            "tvmonitor"
+            ) 
+        return CLASSES
 
-    def load_bboxes(self, xml_path):
+    def load_bboxes(self,xml_path):
+        '''
+        Load bounding boxes for VOC dataset
+        Args:
+             xml_path (str): path of xml file
+        Returns:
+             bounding boxes (float32) : array of coordinates (wmin,wmax,hmin,hmax,class_number)
+        '''
         XML = self.parse_voc_xml(ET.parse(xml_path).getroot())['annotation']['object']
         if not isinstance(XML, list):
             XML = [XML]
@@ -91,7 +109,7 @@ class VOC_box(Dataset):
             bb_wmax = float(xml['bndbox']['xmax'])
             bb_hmin = float(xml['bndbox']['ymin'])
             bb_hmax = float(xml['bndbox']['ymax'])
-            cls_num = CLASSES.index(xml['name'])
+            cls_num = self.CLASSES.index(xml['name'])
             bboxes.append([bb_wmin, bb_hmin, bb_wmax, bb_hmax, cls_num])
         return np.array(bboxes).astype('float32')
 

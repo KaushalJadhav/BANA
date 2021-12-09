@@ -1,22 +1,51 @@
-NAME: "/content/drive/MyDrive/Saved_models/ClsNet"
+# Directory to store models
+NAME: "ClsNet"
 
+# Used to seed random, numpy.random and torch 
 SEED: 0
 
-DATA: 
+DATA:
+# Root directory for image database 
   ROOT: "/content/VOCdevkit/VOC2012"
-  NUM_CLASSES: 21 # For VOC
-  MODE: "train"
+# Name of the dataset
+  DATASET: "VOC"
+# Number of classes
+# 21 for VOC and 80 for COCO
+  NUM_CLASSES: 21 
+  # MODE: "train"
+# Batch size to generate batches
   BATCH_SIZE: 20
+# Images are cropped to dimension specified CROP_SIZE
   CROP_SIZE: (321, 321)
   
 MODEL:
-  WEIGHTS: "vgg_caffe.pth" # From PyCaffe and VGG-16 ImageNet pretrained weights [vgg16_20M.caffemodel] (http://liangchiehchen.com/projects/Init%20Models.html).
+  # Name of file to load pretrained weights
+  WEIGHTS: "vgg_caffe.pth"
+  # From PyCaffe and VGG-16 ImageNet pretrained weights [vgg16_20M.caffemodel] (http://liangchiehchen.com/projects/Init%20Models.html).
+  # Saving the models. 
+  # If SAVING=True, enables saving checkpoint , else disables it.
+  SAVING: True 
+  # Directory to save models if SAVING=True
+  SAVE_DIR: "/content/drive/MyDrive/Saved_models/ClsNet"
   ROI_SIZE: [2,2]
   GRID_SIZE: 4
 
 SOLVER:
+  # Learning rate
   LR: 1e-3 
+  # Momentum used in SGD
   MOMENTUM: 0.9
+  # Weight decay used in SGD
   WEIGHT_DECAY: 5e-4
-  MAX_ITER: 8000
+  # Milestones used in lr_scheduler
   MILESTONES: [5000]
+  # Maximum iterations in training  
+  MAX_ITER: 8000
+
+LOGGER:
+  LOGGING: True
+  TYPE: "wandb"
+  PROJECT: "BANA"
+  ID: "give_name"   
+  RESUME: True
+

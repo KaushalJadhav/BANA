@@ -6,6 +6,13 @@ from .Layers import VGG16
 
 
 def pad_for_grid(mask, grid_size):
+    '''
+    Args:
+          mask (torch.Tensor): mask image 
+          grid_size (torch.Tensor): size of grid
+    Return:
+          out(torch.Tensor): mask with zero padding
+    '''
     Pad_H = grid_size - mask.shape[2] % grid_size
     Pad_W = grid_size - mask.shape[3] % grid_size
     if Pad_H == grid_size:
@@ -26,19 +33,39 @@ def pad_for_grid(mask, grid_size):
 
 
 class Labeler(nn.Module):
-    def __init__(self, num_classes, roi_size, grid_size):
+    '''
+    Args:
+         num_classes (int): number of classes
+         roi_size (tuple): 
+         grid_size (torch.Tensor): size of grid
+    '''
+    def __init__(self,num_classes,roi_size,grid_size):
         super().__init__()
         self.backbone = VGG16(dilation=1)
-        self.classifier = nn.Conv2d(1024, num_classes, 1, bias=False)
+        self.classifier = nn.Conv2d(1024, num_classes, 1, bias=False)   
+        # Convolutional layer with in_channels=1024 and out_channels=num_classes
 
         self.OH, self.OW = roi_size
         self.GS = grid_size
         self.from_scratch_layers = [self.classifier]
         
     def get_features(self, x):
+        '''
+        Args:
+             x (torch.Tensor): input
+        Returns:
+             feature map as output of VGG16 model with input as x
+        '''
         return self.backbone(x)
     
     def weighted_avg_pool_2d(self, input, weight): 
+        '''
+        Args:
+             input (torch.Tensor): input images
+             weight (torch.Tensor): weight
+        Returns:
+             average pooled images  
+        '''
         filtered = input * weight
         _,dims,input_H,input_W = filtered.shape
         stride_H = input_H//self.OH
@@ -60,11 +87,19 @@ class Labeler(nn.Module):
         if ks_W <= 0:
             ks_W = 1
         kernel = torch.ones((dims,1,ks_H,ks_W)).type_as(filtered)
-        numer  = F.conv2d(filtered, kernel,          stride=(stride_H,stride_W), groups=dims)
-        denom  = F.conv2d(weight,   kernel[0][None], stride=(stride_H,stride_W)) + 1e-12
+        numer  = F.conv2d(filtered, kernel, stride=(stride_H,stride_W), groups=dims)
+        denom  = F.conv2d(weight,kernel[0][None], stride=(stride_H,stride_W)) + 1e-12
         return numer / denom
     
     def gen_grid(self, box_coord, width, height):
+        '''
+        Args:
+             box_coord(tuple): coordinates of bounding boxes
+             width(int): width spacing of grid
+             height(int): height spacing of grid
+        Returns:
+             average pooled images
+        '''
         wmin, hmin, wmax, hmax = box_coord[:4]
         grid_x = torch.linspace(wmin, wmax, width).view(1,1,width,1)
         grid_y = torch.linspace(hmin, hmax, height).view(1,height,1,1)
@@ -73,7 +108,13 @@ class Labeler(nn.Module):
         grid = torch.cat((grid_x,grid_y), dim=-1)
         return grid
     
-    def BAP(self, features, bboxes, batchID_of_box, bg_protos, valid_cellIDs, ind_valid_bg_mask):
+    def BAP(self,features,bboxes,batchID_of_box,bg_protos,valid_cellIDs,ind_valid_bg_mask,GAP=False):
+        '''
+        features (torch.Tensor): feature map of shape (batch_size,num_classes,height,width) # CHECK height and width
+        bboxes (numpy.ndarray) : bounding boxes 
+        batchID_of_box (int) : batch index of box  # check
+        # check remaining 
+        '''
         batch_size, _, fH, fW = features.shape
         norm_H, norm_W = (fH-1)/2, (fW-1)/2
         widths  = bboxes[:,[0,2]]*norm_W + norm_W
@@ -105,6 +146,12 @@ class Labeler(nn.Module):
         return fg_protos
     
     def get_grid_bg_and_IDs(self, padded_mask, grid_size):
+        '''
+        features (torch.Tensor): feature map of shape (batch_size,num_classes,height,width) # CHECK height and width
+        bboxes (numpy.ndarray) : bounding boxes 
+        batchID_of_box (int) : batch index of box  # check
+        # check remaining 
+        '''
         batch_size, _, padded_H, padded_W = padded_mask.shape
         cell_H, cell_W = padded_H//grid_size, padded_W//grid_size
         grid_bg = padded_mask.unfold(2,cell_H,cell_H).unfold(3,cell_W,cell_W) 
@@ -126,11 +173,11 @@ class Labeler(nn.Module):
     
     def forward(self, img, bboxes, batchID_of_box, bg_mask, ind_valid_bg_mask):
         '''
-        img               : (N,3,H,W) float32
-        bboxes            : (K,5) float32
-        batchID_of_box    : (K,) int64
-        bg_mask           : (N,1,H,W) float32
-        ind_valid_bg_mask : (N,) uint8
+        img (float32)            : array of shape(N,3,H,W) 
+        bboxes (float32)         : array of shape(K,5) 
+        batchID_of_box (int64)   : batch index of box shape(K,) 
+        bg_mask (float32)        : background mask of shape(N,1,H,W) 
+        ind_valid_bg_mask (uint8): shape(N,)     # CHECK
         '''
         features = self.get_features(img) # (N,256,105,105)
         batch_size,dims,fH,fW = features.shape
@@ -154,7 +201,8 @@ class Labeler(nn.Module):
     
     def get_params(self, do_init=True):
         '''
-        This function is borrowed from AffinitNet. It returns (pret_weight, pret_bias, scratch_weight, scratch_bias).
+        This function is borrowed from AffinitNet. 
+        It returns (pret_weight, pret_bias, scratch_weight, scratch_bias).
         Please, also see the paper (Learning Pixel-level Semantic Affinity with Image-level Supervision, CVPR 2018), and codes (https://github.com/jiwoon-ahn/psa/tree/master/network).
         '''
         params = ([], [], [], [])
