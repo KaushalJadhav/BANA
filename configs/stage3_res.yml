@@ -7,7 +7,7 @@ DATA:
   MODE: "train"
   PSEUDO_LABEL_FOLDER: ["Ycrf", "Yret"]
   BATCH_SIZE: 10
-  CROP_SIZE: 321
+  CROP_SIZE: (321, 321)
   
 MODEL:
   FREEZE_BN: False

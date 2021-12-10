@@ -35,3 +35,10 @@ def wandb_log(train_loss, lr, iter):
         'Loss': train_loss,
         'Learning Rate': lr,
     }, step=iter)
+
+def wandb_log_seg(train_loss, lr, train_iou):
+    wandb.log({
+        'Train Loss': train_loss,
+        'Learning Rate': lr,
+        'Train IoU': train_iou
+    })
