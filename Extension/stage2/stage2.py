@@ -40,7 +40,7 @@ def my_collate(batch):
     sample["item"]=items
     return sample
 
-class VOCDataModule(pl.LightningDataModule):
+class VOCDataModule():
     def __init__(self,cfg):
         super().__init__()
         # this line allows to access init params with 'self.hparams' attribute
@@ -53,28 +53,21 @@ class VOCDataModule(pl.LightningDataModule):
         self.cfg=cfg 
     @ property
     def num_classes(self) -> int:
-        return self.cfg.DATA.NUM_CLASSES
-    def prepare_data(self):
-        # Not needed
-        pass 
+        return self.cfg.DATA.NUM_CLASSES 
     def setup(self,stage=None):
         self.dataset=VOC_box(self.cfg,self.transforms) 
-    def train_dataloader(self):
-        return DataLoader(self.dataset, batch_size=1,collate_fn=my_collate)
-    def val_dataloader(self):
-        return DataLoader(self.dataset, batch_size=1,collate_fn=my_collate)
-    def test_dataloader(self):
+    def get_dataloader(self):
         return DataLoader(self.dataset, batch_size=1,collate_fn=my_collate)
 
-class LightningModel(pl.LightningModule):
+class generate_PSEUDOLABELS():
     def __init__(self,cfg):
         super().__init__()
-        self.model=Labeler(cfg.DATA.NUM_CLASSES, cfg.MODEL.ROI_SIZE, cfg.MODEL.GRID_SIZE)
+        self.model=Labeler(cfg.DATA.NUM_CLASSES, cfg.MODEL.ROI_SIZE, cfg.MODEL.GRID_SIZE).cuda()
         self.cfg=cfg
         self.classifier_weights=torch.clone(self.model.classifier.weight.data)
         # load checkpoint 
         # need to see whether the function also works on .pt files
-        self.load_weights(f"{cfg.MODEL.WEIGHTS}")  # Just loading pre-trained weights
+        self.load_weights(f"{cfg.MODEL.WEIGHTS}")  #load pre-trained weights
     
     def DENSE_CRF(self):
         bi_w, bi_xy_std, bi_rgb_std, pos_w, pos_xy_std = self.cfg.MODEL.DCRF
@@ -89,16 +82,9 @@ class LightningModel(pl.LightningModule):
             sub_folder = folder_name + f"/{txt}"
             os.mkdir(sub_folder)
             save_paths += [os.path.join(sub_folder, "{}.png")]
-        return save_paths
+        return save_paths  
     
-    def training_step(self, batch, batch_idx):
-        return None 
-    def test_step(self, batch, batch_idx): 
-        # cannot use validation_step
-        sample=batch 
-        self.common_step(sample)  
-    
-    def common_step(self,sample):
+    def forward(self,sample):
         self.get_features(sample)
         self.get_bg_attn(sample)
         self.get_unary(sample)
@@ -121,13 +107,13 @@ class LightningModel(pl.LightningModule):
         self.gt_labels =sample["bboxes"][:,4].unique()
     
     def get_features(self,sample):
-        self.features = self.model.get_features(sample["img"])
+        self.features = self.model.get_features(sample["img"].cuda())
         self.features = F.interpolate(self.features,sample["img"].shape[-2:], mode='bilinear', align_corners=True)
         self.normed_f = F.normalize(self.features)
         self.padded_features = pad_for_grid(self.features, self.cfg.MODEL.GRID_SIZE)
     
     def get_bg_attn(self,sample):
-        self.padded_bg_mask = pad_for_grid(sample["bg_mask"], self.cfg.MODEL.GRID_SIZE)
+        self.padded_bg_mask = pad_for_grid(sample["bg_mask"].cuda(), self.cfg.MODEL.GRID_SIZE)
         self.grid_bg, self.valid_gridIDs = self.model.get_grid_bg_and_IDs(self.padded_bg_mask, self.cfg.MODEL.GRID_SIZE)
         self.bg_protos = self.model.get_bg_prototypes(self.padded_features, self.padded_bg_mask, self.grid_bg, self.cfg.MODEL.GRID_SIZE)
         self.bg_protos = self.bg_protos[0,valid_gridIDs] # (1,GS**2,dims,1,1) --> (len(valid_gridIDs),dims,1,1)
@@ -210,9 +196,6 @@ class LightningModel(pl.LightningModule):
     
     def load_weights(self,path):
         self.model.load_state_dict(torch.load(path), strict=False)
-    
-    def configure_optimizers(self):
-        return None 
 
 
     

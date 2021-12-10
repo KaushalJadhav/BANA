@@ -18,10 +18,12 @@ def wandblogging(cfg,model):
     else:
         resume=None
         
-    wandb_logger = WandbLogger(project=cfg.LOGGER.PROJECT, # group runs in the specified project
-    log_model='all', # log all new checkpoints during training
-    id=cfg.LOGGER.ID,  # run id, necessary for resuming
-    resume=resume # if cfg.LOGGER.RESUME=True,resumes run else overwrites previous run if exists
+    wandb_logger = WandbLogger(
+        name=cfg.NAME,
+        project=cfg.LOGGER.PROJECT, # group runs in the specified project
+        log_model='all', # log all new checkpoints during training
+        id=cfg.LOGGER.ID,  # run id, necessary for resuming
+        resume=resume # if cfg.LOGGER.RESUME=True,resumes run else overwrites previous run if exists
     )    
     wandb_logger.watch(model,log='all')  # logs histogram of gradients and parameters
     return wandb_logger 
