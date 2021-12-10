@@ -1,5 +1,4 @@
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,11 +7,15 @@ from torch.utils.data import DataLoader
 import data.transforms_bbox as Tr
 from data.voc import VOC_box
 from models.ClsNet import Labeler
+from utils.BgMaskfromBoxes import VOC_BgMaskfromBoxes
 
-
-def my_collate(batch):
+def custom_collate(batch):
     '''
     This is to assign a batch-wise index for each box.
+    Args:
+         batch (torch.Tensor): batch of Dataloader
+    Returns:  
+             sample (Dict): Dictionary #CHECK 
     '''
     sample = {}
     img = []
@@ -33,6 +36,12 @@ def my_collate(batch):
 
 
 class VOCDataModule(pl.LightningDataModule):
+    '''
+    VOC DataModule
+    Generates train and validation dataloaders for VOC dataset
+    Args:
+         cfg: namespace of config file variables  
+    '''
     def __init__(self,cfg):
         super().__init__()
         # this line allows to access init params with 'self.hparams' attribute
@@ -50,17 +59,27 @@ class VOCDataModule(pl.LightningDataModule):
 
     @ property
     def num_classes(self) -> int:
+        '''
+        Returns:
+                Number of classes
+        '''
         return self.cfg.DATA.NUM_CLASSES 
 
     def setup(self,stage=None):
+        '''
+        setup data for loading it into dataloaders 
+        '''
+        print("Generating Background masks")
+        VOC_BgMaskfromBoxes(self.cfg.DATA.ROOT)
         self.train_dataset = VOC_box(self.cfg, self.transforms, True)
         self.val_dataset = VOC_box(self.cfg, self.transforms, False)
 
     def train_dataloader(self):
+        ''' train dataloader'''
         return DataLoader(
             self.train_dataset, 
             batch_size=self.cfg.DATA.BATCH_SIZE,
-            collate_fn=my_collate,
+            collate_fn=custom_collate,
             shuffle=True,
             num_workers=4,
             pin_memory=True,
@@ -68,10 +87,11 @@ class VOCDataModule(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
+        ''' validation dataloader'''
         return DataLoader(
             self.val_dataset, 
             batch_size=self.cfg.DATA.BATCH_SIZE,
-            collate_fn=my_collate,
+            collate_fn=custom_collate,
             shuffle=False,
             num_workers=4,
             pin_memory=True,
@@ -80,43 +100,67 @@ class VOCDataModule(pl.LightningDataModule):
 
 
 class LabelerLitModel(pl.LightningModule):
-
+    '''
+    Lightning extension of the Pytorch based model.
+    Args:
+         cfg: namespace of config file variables 
+    '''
     def __init__(self,cfg):
         super().__init__()
         self.model = Labeler(cfg.DATA.NUM_CLASSES, cfg.MODEL.ROI_SIZE, cfg.MODEL.GRID_SIZE)
         self.cfg = cfg
         self.params = self.model.get_params()
-        self.criterion = nn.CrossEntropyLoss()
-        self.interval_verbose = self.cfg.SOLVER.MAX_ITER // 40
+        self.criterion = nn.CrossEntropyLoss()  # CE loss used
         self.backbone = self.model.backbone
         self.save_hyperparameters()           # to automatically log hyperparameters to W&B
-        self.load_weights(f"./weights/{cfg.MODEL.WEIGHTS}")  # Just loading pre-trained weights
+        self.load_weights(f"./weights/{cfg.MODEL.WEIGHTS}")  # loading pre-trained weights
 
-    def training_step(self, batch, batch_idx):                     
+    def training_step(self, batch, batch_idx):
+        '''
+        Train step.
+        Args:
+             batch (torch.Tensor): batch of Dataloader
+             batch_idx (int): batch index
+        Returns:
+                loss_dict (Dict): Train loss
+        '''                      
         loss = self.step(batch)
+        loss_dict={"train_loss":loss}
         self.log_dict(
-            {"train_loss":loss},
+            loss_dict,
             on_step=True,
             on_epoch=True,
             prog_bar=True,
         )
-        return {
-            "loss":loss
-        }
+        return loss_dict
 
-    def validation_step(self, batch, batch_idx):                     
+    def validation_step(self, batch, batch_idx):
+        '''
+        Validation step.
+        Args:
+             batch (torch.Tensor): batch of Dataloader
+             batch_idx (int): batch index
+        Returns:
+                loss_dict (Dict): Validation loss
+        '''                    
         loss = self.step(batch)
+        loss_dict={"val_loss":loss}
         self.log_dict(
-            {"val_loss":loss},
+            loss_dict,
             on_step=False,
             on_epoch=True,
             prog_bar=True,
         )
-        return {
-            "val_loss":loss
-        }
+        return loss_dict
 
     def step(self,sample):
+        '''
+        Common step used to calculate train loss and val loss.
+        Args:
+                sample (Dict): Dictionary #CHECK
+        Returns:
+                loss
+        '''
         img = sample["img"]
         bboxes = sample["bboxes"]
         bg_mask = sample["bg_mask"]
@@ -132,7 +176,11 @@ class LabelerLitModel(pl.LightningModule):
         return loss  
 
     def configure_optimizers(self):
-
+        '''
+        Defines learning rate scheduler and optimizer
+        Returns: 
+                 Dict: {"optimizer": optimizer,"lr_scheduler":lr_scheduler} 
+        '''
         lr = self.cfg.SOLVER.LR
         wd = self.cfg.SOLVER.WEIGHT_DECAY
 
@@ -167,4 +215,11 @@ class LabelerLitModel(pl.LightningModule):
         }
     
     def load_weights(self,path):
+        '''
+        loads state_dict from given path
+        Args:
+             path: path of file containing pre-trained weight.
+             (PyCaffe and VGG-16 ImageNet pretrained weights can be downloaded from-
+             [vgg16_20M.caffemodel] (http://liangchiehchen.com/projects/Init%20Models.html))
+        '''
         self.backbone.load_state_dict(torch.load(path), strict=False)

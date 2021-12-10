@@ -9,7 +9,6 @@ from __future__ import absolute_import, print_function
 
 from collections import OrderedDict
 
-import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -31,7 +30,7 @@ class _ConvBnReLU(nn.Sequential):
          kernel_size (int or tuple): Size of the convolving kernel
          stride (int or tuple,): Stride of the convolution.
          padding (int, tuple or str,) : Padding added to all four sides of the input.
-         dilation (int or tuple,): Spacing between kernel elements.
+         dilation (int or tuple): Spacing between kernel elements.
          relu (bool,optional) : If True nn.ReLU activation function used. Default:True
     """
 #     BATCH_NORM = _BATCH_NORM
@@ -48,7 +47,7 @@ class _ConvBnReLU(nn.Sequential):
             self.add_module("relu", nn.ReLU())
 
 
-class _Bottleneck(nn.Module):  # check whether it is pl.LightningModule
+class _Bottleneck(nn.Module):  
     """
     Bottleneck block of MSRA ResNet.
     Args:
@@ -56,7 +55,7 @@ class _Bottleneck(nn.Module):  # check whether it is pl.LightningModule
          norm_type : Type of Batch Normalisation
          out_ch (int): Number of channels produced by the convolution
          stride (int or tuple,): Stride of the convolution.
-         dilation (int or tuple,): Spacing between kernel elements.
+         dilation (int or tuple): Spacing between kernel elements.
          downsample(bool) : if True downsampling used in shortcut connection else identity mapping used
     """
     def __init__(self, in_ch, norm_type, out_ch, stride, dilation, downsample):
@@ -94,7 +93,7 @@ class _ResLayer(nn.Sequential):
          norm_type : Type of Batch Normalisation
          out_ch (int): Number of channels produced by the convolution
          stride (int or tuple,): Stride of the convolution.
-         dilation (int or tuple,): Spacing between kernel elements.
+         dilation (int or tuple): Spacing between kernel elements.
          multi_grids (any, optional) : List/ Array of grid values. Default:None
     """
     def __init__(self, n_layers, in_ch, norm_type, out_ch, stride, dilation, multi_grids=None):
@@ -177,7 +176,8 @@ class RES101(nn.Sequential):
         '''
         Args:
          x (torch.Tensor): Input
-         return_feature_maps (Bool,optional): if True returns list of features extracted from each layer else returns 
+         return_feature_maps (Bool,optional): if True returns list of features extracted from each layer 
+         else returns features extracted from last layer only.
         '''
         conv_out = []
         x = self.layer1(x)
@@ -191,6 +191,13 @@ class RES101(nn.Sequential):
 
 
 class RES101_V3plus(nn.Sequential):
+     '''
+        Args:
+         output_stride (int): decides stride used in convolution layers.
+                              If output_stride=8, strides = [1, 2, 1, 1]
+                              If output_stride=16, strides = [1, 2, 2, 1]
+         sync_bn (Bool)     : If True nn.SyncBatchNorm used else nn.BatchNorm2d used 
+    '''
     def __init__(self, output_stride, sync_bn):
         super().__init__()
         if sync_bn:
@@ -199,6 +206,7 @@ class RES101_V3plus(nn.Sequential):
             norm_type = nn.BatchNorm2d
         n_blocks = [3,4,23,3]
         ch = [64 * 2 ** p for p in range(6)]
+        assert output_stride == 8 or output_stride == 16,'Output stride should be 8 or 16'
         if output_stride == 16:
             strides = [1, 2, 2, 1]
             dilations = [1, 1, 1, 2]
@@ -206,14 +214,10 @@ class RES101_V3plus(nn.Sequential):
             strides = [1, 2, 1, 1]
             dilations = [1, 1, 2, 4]
         self.add_module("layer1", _Stem(norm_type, ch[0]))
-        self.add_module("layer2", _ResLayer(n_blocks[0], ch[0], norm_type, ch[2],
-                                            strides[0], dilations[0]))
-        self.add_module("layer3", _ResLayer(n_blocks[1], ch[2], norm_type, ch[3],
-                                            strides[1], dilations[1]))
-        self.add_module("layer4", _ResLayer(n_blocks[2], ch[3], norm_type, ch[4],
-                                            strides[2], dilations[2]))
-        self.add_module("layer5", _ResLayer(n_blocks[3], ch[4], norm_type, ch[5],
-                                            strides[3], dilations[3]))
+        self.add_module("layer2", _ResLayer(n_blocks[0], ch[0], norm_type, ch[2],strides[0],dilations[0]))
+        self.add_module("layer3", _ResLayer(n_blocks[1], ch[2], norm_type, ch[3],strides[1],dilations[1]))
+        self.add_module("layer4", _ResLayer(n_blocks[2], ch[3], norm_type, ch[4],strides[2],dilations[2]))
+        self.add_module("layer5", _ResLayer(n_blocks[3], ch[4], norm_type, ch[5],strides[3], dilations[3]))
         
     def freeze_bn(self):
         for m in self.modules():
@@ -231,6 +235,13 @@ class RES101_V3plus(nn.Sequential):
 
 
 class ASPPConv(nn.Sequential):
+    """
+    Args:
+         in_channels (int): Number of channels in the input image
+         out_channels (int): Number of channels produced by the convolution
+         dilation (int): Spacing between kernel elements.
+         BatchNorm : Batch Normalisation model 
+    """
     def __init__(self, in_channels, out_channels, dilation, BatchNorm):
         modules = [
             nn.Conv2d(in_channels, out_channels, 3, padding=dilation, dilation=dilation, bias=False),
@@ -241,7 +252,14 @@ class ASPPConv(nn.Sequential):
 
 
 class ASPPPooling(nn.Sequential):
-    def __init__(self, in_channels, out_channels, BatchNorm, global_avg_pool_bn=False):
+    """
+    Args:
+         in_channels (int)        : Number of channels in the input image
+         out_channels (int)       : Number of channels produced by the convolution
+         BatchNorm                : Batch Normalisation model 
+         global_avg_pool_bn (bool,optional): If True, Batch Normalisation used else not used. Default: False
+    """
+    def __init__(self, in_channels,out_channels,BatchNorm,global_avg_pool_bn=False):
         if global_avg_pool_bn: #If Batchsize is 1, error occur.
             super(ASPPPooling, self).__init__(
                 nn.AdaptiveAvgPool2d(1),
@@ -260,8 +278,18 @@ class ASPPPooling(nn.Sequential):
         return F.interpolate(x, size=size, mode='bilinear', align_corners=False)
 
 
-class ASPP(nn.Module): 
-    def __init__(self, output_stride, sync_bn, global_avg_pool_bn=False, in_channels=2048, out_channels=256):
+class ASPP(nn.Module):
+     '''
+        Args:
+         output_stride (int)               : decides rates( diation).
+                                             If output_stride=8,rates = [12, 24, 36]
+                                             If output_stride=16,rates= [6, 12, 18]
+         sync_bn (Bool)                    : If True nn.SyncBatchNorm used else nn.BatchNorm2d used 
+         global_avg_pool_bn (bool,optional): If True, Batch Normalisation used else not used. Default: False
+         in_channels (int,optional)        : Number of channels in the input image.Default: 2048
+         out_channels (int,optional)       : Number of channels produced by the convolution.Default: 256 
+    '''
+    def __init__(self, output_stride, sync_bn,global_avg_pool_bn=False, in_channels=2048, out_channels=256):
         super(ASPP, self).__init__()
         if sync_bn:
             BatchNorm = nn.SyncBatchNorm
@@ -272,6 +300,7 @@ class ASPP(nn.Module):
             nn.Conv2d(in_channels, out_channels, 1, bias=False),
             BatchNorm(out_channels),
             nn.ReLU()))
+        assert output_stride == 8 or output_stride == 16,'Output stride should be 8 or 16'
         if output_stride == 16:
             atrous_rates = [6, 12, 18]
         if output_stride == 8:
@@ -296,6 +325,7 @@ class ASPP(nn.Module):
         return self.project(res)
     
     def _init_weight(self):
+        '''Initialise weights'''
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 torch.nn.init.kaiming_normal_(m.weight)
@@ -307,7 +337,10 @@ class ASPP(nn.Module):
 class VGG16(nn.Module):
     '''
     This network design is borrowed from AffinitNet.
-    Please, also see their paper (Learning Pixel-level Semantic Affinity with Image-level Supervision, CVPR 2018), and codes (https://github.com/jiwoon-ahn/psa/tree/master/network).
+    Please, also see their paper (Learning Pixel-level Semantic Affinity with Image-level Supervision, CVPR 2018), 
+    and codes (https://github.com/jiwoon-ahn/psa/tree/master/network).
+    Args:
+         dilation (int or tuple): Spacing between kernel elements. 
     '''
     def __init__(self, dilation):
         super().__init__()

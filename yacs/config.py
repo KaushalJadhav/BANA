@@ -22,7 +22,6 @@ See README.md for usage and examples.
 
 import copy
 import io
-import logging
 import os
 import sys
 from ast import literal_eval
@@ -56,8 +55,6 @@ if _PY2:
     import imp
 else:
     import importlib.util
-
-logger = logging.getLogger(__name__)
 
 
 class CfgNode(dict):
@@ -301,7 +298,6 @@ class CfgNode(dict):
     def key_is_deprecated(self, full_key):
         """Test if a key is deprecated."""
         if full_key in self.__dict__[CfgNode.DEPRECATED_KEYS]:
-            logger.warning("Deprecated config key (ignoring): {}".format(full_key))
             return True
         return False
 
@@ -540,8 +536,6 @@ def _check_and_coerce_cfg_value_type(replacement, original, key, full_key):
 
 
 def _assert_with_logging(cond, msg):
-    if not cond:
-        logger.debug(msg)
     assert cond, msg
 
 

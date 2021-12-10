@@ -25,6 +25,7 @@ _C.MODEL.LAMBDA = 0.        # For Stage 3 only
 _C.MODEL.DCRF= []           # For Stage 2&3
 _C.MODEL.SAVING= False      # For stage 1
 _C.MODEL.SAVE_DIR=""        # For stage 1
+_C.MODEL.USE_BEST=False        # For stage 1
 
 _C.SOLVER = CN()
 _C.SOLVER.LR = 0.           # For stage 1

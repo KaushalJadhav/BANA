@@ -3,7 +3,7 @@ import sys
 #from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning import Trainer
 from utils.common_util import seed,process_cfg
-from PytorchLightning.stage2.Lightningextension import VOCDataModule,LightningModel
+from Extension.stage2.stage2 import VOCDataModule,LightningModel
 import wandb
 from pytorch_lightning.loggers import WandbLogger
 
