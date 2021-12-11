@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-import data.transforms_seg as Tr
+import data.transforms_seg as Trs
 from data.voc import VOC_seg
 from configs.defaults import _C
 
@@ -22,12 +22,12 @@ def main(cfg):
         random.seed(cfg.SEED)
         os.environ["PYTHONHASHSEED"] = str(cfg.SEED)
 
-    tr_transforms = Tr.Compose([
-        Tr.RandomScale(0.5, 1.5),
-        Tr.ResizeRandomCrop(cfg.DATA.CROP_SIZE), 
-        Tr.RandomHFlip(0.5), 
-        Tr.ColorJitter(0.5,0.5,0.5,0),
-        Tr.Normalize_Caffe(),
+    tr_transforms = Trs.Compose([
+        Trs.RandomScale(0.5, 1.5),
+        Trs.ResizeRandomCrop(cfg.DATA.CROP_SIZE), 
+        Trs.RandomHFlip(0.5), 
+        Trs.ColorJitter(0.5,0.5,0.5,0),
+        Trs.Normalize_Caffe(),
     ])
 
     trainset = VOC_seg(cfg, tr_transforms)
@@ -63,16 +63,23 @@ def main(cfg):
         img, masks = sample # VOC_seg dataloader returns image and the corresponing (pseudo) label
         ycrf, yret = masks
         
-        y_pred = model(img.cuda(), img.size())
-        feature_map = model.get_features()
+        img_size = img.size()
+
+        feature_map = model.get_features(img.cuda())
         classifier_weight = torch.clone(model.classifier.weight.data)
 
-        loss = criterion(y_pred, ycrf, yret, feature_map, classifier_weight)
+        logit, img = model(img.cuda(), (img_size[2], img_size[3]))
+
+        loss, loss_ce, loss_wce = criterion(logit[0], ycrf[0], yret[0], feature_map[0], classifier_weight)
         
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         scheduler.step()
+
+        print(loss.item())
+        print(loss_ce.item())
+        print(loss_wce.item())
 
 def get_args():
     parser = argparse.ArgumentParser()

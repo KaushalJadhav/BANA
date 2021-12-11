@@ -56,7 +56,8 @@ class RandomHFlip():
             for mask in masks:
                mask = np.copy(mask[:, ::-1])
                new_masks.append(mask)
-        return img, new_masks
+            return img, new_masks
+        return img, masks
         
 
 class ResizeRandomCrop():

@@ -118,15 +118,16 @@ class VOC_seg(Dataset):
         if self.annot_folders is not None:
             self.mask_paths = [os.path.join(cfg.DATA.ROOT, folder, "{}.png") for folder in self.annot_folders]
         self.len = len(self.filenames)
+        print("Number of Files Loaded: ", self.len)
     
     def __len__(self):
         return self.len
     
     def __getitem__(self, index):
         fn  = self.filenames[index]
-        img = Image.open(self.img_path.format(fn))
-        if self.annot_folder is not None:
-            masks = [Image.open(mp.format(fn)) for mp in self.mask_paths]
+        img = np.array(Image.open(self.img_path.format(fn)), dtype=np.float32) 
+        if self.annot_folders is not None:
+            masks = [np.array(Image.open(mp.format(fn)), dtype=np.int64) for mp in self.mask_paths]
         else:
             masks = None
             
