@@ -72,7 +72,7 @@ def main(cfg):
         ycrf, yret = masks
 
         img = img.to('cuda')
-        yret = yretto('cuda').long()
+        yret = yret.to('cuda').long()
         
         img_size = img.size()
         logit = model(img, (img_size[2], img_size[3]))
