@@ -16,7 +16,7 @@ class VOC_box(Dataset):
          is_train (bool): train dataset loaded if True else val dataset loaded. Default: True
     ''' 
     def __init__(self, cfg, transforms=None, is_train=True):
-        print("loading dataset from {cfg.DATA.ROOT}")
+        print("loading dataset from"+cfg.DATA.ROOT)
         if is_train:
             if cfg.DATA.AUG:
                 txt_name = "train_aug.txt"

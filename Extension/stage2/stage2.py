@@ -154,7 +154,7 @@ class generate_PSEUDOLABELS():
         dCRF = self.DENSE_CRF()
         trainset=dataloader.dataset
         with torch.no_grad():
-            for it, (img, bboxes, bg_mask) in enumerate(tqdm(dataloader.get_dataloader())):
+            for it, (img, bboxes, bg_mask,_) in enumerate(tqdm(dataloader.get_dataloader())):
                 '''
                 img     : (1,3,H,W) float32
                 bboxes  : (1,K,5)   float32
