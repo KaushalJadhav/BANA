@@ -1,4 +1,4 @@
-from utils.common_util import get_args
+from utils.util import get_args
 from stage1 import stage1
 from stage2 import stage2
 
