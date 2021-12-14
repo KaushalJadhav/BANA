@@ -100,7 +100,7 @@ class generate_PSEUDOLABELS():
     def get_unary(self,Bg_unary, Fg_unary,region_inside_bboxes,rgb_img):
         unary = torch.cat((Bg_unary, Fg_unary), dim=0)
         unary[:,region_inside_bboxes] = torch.softmax(unary[:,region_inside_bboxes], dim=0)
-        refined_unary = dCRF.inference(rgb_img, unary.numpy())
+        refined_unary = self.dCRF.inference(rgb_img, unary.numpy())
         return refined_unary
     
     def get_Y_crf(self,refined_unary,refined_unary_u0,gt_labels):
@@ -151,7 +151,7 @@ class generate_PSEUDOLABELS():
 
     def forward(self,dataloader):
         self.model.eval()
-        dCRF = self.DENSE_CRF()
+        self.dCRF = self.DENSE_CRF()
         trainset=dataloader.dataset
         with torch.no_grad():
             for it, (img, bboxes, bg_mask,_) in enumerate(tqdm(dataloader.get_dataloader())):
