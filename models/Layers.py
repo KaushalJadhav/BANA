@@ -198,7 +198,7 @@ class RES101_V3plus(nn.Sequential):
                               If output_stride=16, strides = [1, 2, 2, 1]
          sync_bn (Bool)     : If True nn.SyncBatchNorm used else nn.BatchNorm2d used 
     '''
-    def __init__(self, output_stride, sync_bn):
+    def __init__(self, output_stride,sync_bn):
         super().__init__()
         if sync_bn:
             norm_type = nn.SyncBatchNorm
