@@ -203,11 +203,11 @@ class generate_PSEUDOLABELS():
 
                 # Y_ret
                 corr_maps=self.get_corr_maps(gt_labels,Y_crf,region_inside_bboxes,bboxes)
-                Y_ret=self.get_Y_ret(self,corr_maps,gt_labels)
+                Y_ret=self.get_Y_ret(corr_maps,gt_labels)
 
                 paths=self.CHECK_SAVE_PSEUDO_LABLES()
                 if paths:
-                    for pseudo, save_path in zip([Y_crf, Y_ret, Y_crf_u0],path):
+                    for pseudo, save_path in zip([Y_crf, Y_ret, Y_crf_u0],paths):
                         Image.fromarray(pseudo).save(save_path.format(fn)) 
     
     def load_weights(self,path):
