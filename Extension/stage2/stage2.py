@@ -17,8 +17,8 @@ from tqdm import tqdm
 class VOCDataLoader():
     def __init__(self,cfg):
         self.transforms= Tr.Normalize_Caffe()
-        self.dataset=VOC_box(self.cfg,self.transforms)
         self.cfg=cfg 
+        self.dataset=VOC_box(self.cfg,self.transforms)
     @ property
     def num_classes(self) -> int:
         return self.cfg.DATA.NUM_CLASSES 
