@@ -135,7 +135,7 @@ class generate_PSEUDOLABELS():
             if uni_cls == 0:
                 corr_maps[idx_cls, ~region_inside_bboxes] = 1
             else:
-                mask = torch.zeros(img_H,img_W).type_as(corr_maps)
+                mask = torch.zeros(self.img_H,self.img_W).type_as(corr_maps)
                 for wmin,hmin,wmax,hmax,_ in bboxes[bboxes[:,4]==uni_cls]:
                     mask[hmin:hmax,wmin:wmax] = 1
                 corr_maps[idx_cls] *= mask
@@ -165,8 +165,8 @@ class generate_PSEUDOLABELS():
                 rgb_img = np.array(Image.open(trainset.img_path.format(fn))) # RGB input image
                 bboxes = bboxes[0] # (1,K,5) --> (K,5) bounding boxes
                 bg_mask = bg_mask[None] # (1,H,W) --> (1,1,H,W) background mask
-                img_H,img_W = img.shape[-2:]
-                norm_H, norm_W = (img_H-1)/2, (img_W-1)/2
+                self.img_H,self.img_W = img.shape[-2:]
+                norm_H, norm_W = (self.img_H-1)/2, (self.img_W-1)/2
                 bboxes[:,[0,2]] = bboxes[:,[0,2]]*norm_W + norm_W
                 bboxes[:,[1,3]] = bboxes[:,[1,3]]*norm_H + norm_H
                 bboxes = bboxes.long()
@@ -192,7 +192,7 @@ class generate_PSEUDOLABELS():
             
                 # (Out of bboxes) reset Fg scores to zero
                 for idx_cls, uni_cls in enumerate(gt_labels,1):
-                    mask = np.zeros((img_H,img_W))
+                    mask = np.zeros((self.img_H,self.img_W))
                     for wmin,hmin,wmax,hmax,_ in bboxes[bboxes[:,4]==uni_cls]:
                         mask[hmin:hmax,wmin:wmax] = 1
                     refined_unary[idx_cls] *= mask
