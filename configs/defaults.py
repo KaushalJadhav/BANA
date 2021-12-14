@@ -14,6 +14,7 @@ _C.DATA.PSEUDO_LABEL_FOLDER = []
 _C.DATA.BATCH_SIZE = 0       # For stage 1
 _C.DATA.CROP_SIZE = ()       # For stage 1
 _C.DATA.DATASET = ""         # For stage 1
+_C.DATA.AUG=False          # For stage 2
 
 _C.MODEL = CN()
 _C.MODEL.WEIGHTS = ""       # For stage 1
@@ -26,7 +27,6 @@ _C.MODEL.DCRF= []           # For Stage 2&3
 _C.MODEL.SAVING= False      # For stage 1
 _C.MODEL.SAVE_DIR=""        # For stage 1
 _C.MODEL.USE_BEST=False     # For stage 1
-_C.MODEL.AUG=False          # For stage 2
 
 _C.SOLVER = CN()
 _C.SOLVER.LR = 0.           # For stage 1
