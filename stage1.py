@@ -43,7 +43,7 @@ def stage1(args):
     #sets whether PyTorch operations must use deterministic algorithms.
     max_steps=min(cfg.SOLVER.MAX_ITER,args.step),
     max_epochs=args.epoch,
-    enable_checkpointing=cfg.MODEL.SAVING 
+    enable_checkpointing=cfg.MODEL.SAVING, 
     # if cfg.MODEL.SAVING=True checkpointing will be enabled, else disabled
     callbacks=checkpoint_callback,
     # log data every training step
