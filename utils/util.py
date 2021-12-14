@@ -74,7 +74,7 @@ def checkpoint_callback_stage1(cfg,n_epoch,n_step):
         filename='{epoch}-{step}-{train_loss:.2f}',   
         save_last=True,                               # save last checkpoint
         save_top_k =1,                                # save the best checkpoint
-        monitor='train/loss'                          # check train loss
+        monitor='train/loss',                         # check train loss
         mode='min',                     # criteria for best checkpoint is minimum train loss
         every_n_epochs=n_epoch,              # if n_epoch is not None after epochs=n_epoch checkpoint saved.
         save_on_train_epoch_end=True if epoch not None,   
