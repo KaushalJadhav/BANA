@@ -18,14 +18,20 @@ class VOC_box(Dataset):
     def __init__(self, cfg, transforms=None, is_train=True):
         print("loading dataset from {cfg.DATA.ROOT}")
         if is_train:
-            txt_name = "train.txt" 
+            if cfg.MODEL.AUG:
+                txt_name = "train_aug.txt"
+            else:
+                txt_name = "train.txt" 
         else:
             txt_name = "val.txt"
 
-        f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)
+        if cfg.DATA.AUG:
+            f_path = os.path.join(cfg.DATA.ROOT,"ImageSets/SegmentationAug", txt_name)
+        else:
+            f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)
+
         self.filenames  = [x.split('\n')[0] for x in open(f_path)]
         self.transforms = transforms
-
         self.img_path  = os.path.join(cfg.DATA.ROOT, 'JPEGImages/{}.jpg')
         self.xml_path  = os.path.join(cfg.DATA.ROOT, 'Annotations/{}.xml')
         self.mask_path = os.path.join(cfg.DATA.ROOT, 'BgMaskfromBoxes/{}.png')
