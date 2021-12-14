@@ -7,6 +7,7 @@ DATA:
   ROOT: "/kaggle/working/data/VOCdevkit/VOC2012"
   NUM_CLASSES: 21 # For VOC
   MODE: "val"
+  AUG: False
   
 MODEL:
   WEIGHTS: "ClsNet.pt" # From Stage 1
@@ -14,3 +15,11 @@ MODEL:
   GRID_SIZE: 1
   BG_THRESHOLD: 0.99
   DCRF: [4, 55, 3, 3, 3]
+
+WANDB:
+  RESTORE_RUN_PATH: "dl-segmentation/MLRC-BANA/3gmasxud" 
+  # "dl-segmentation/MLRC-BANA/3gmasxud" for bap naug
+  # "dl-segmentation/MLRC-BANA/3tlmc1pv" for bap aug
+  # "dl-segmentation/MLRC-BANA/yykkwjhx" for gap naug
+  # "dl-segmentation/MLRC-BANA/3v1fvawn" for gap aug
+  RESTORE_NAME: "weights/ClsNet.pt"
