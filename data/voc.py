@@ -18,7 +18,7 @@ class VOC_box(Dataset):
     def __init__(self, cfg, transforms=None, is_train=True):
         print("loading dataset from {cfg.DATA.ROOT}")
         if is_train:
-            if cfg.MODEL.AUG:
+            if cfg.DATA.AUG:
                 txt_name = "train_aug.txt"
             else:
                 txt_name = "train.txt" 
