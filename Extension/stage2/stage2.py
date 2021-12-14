@@ -65,7 +65,7 @@ class generate_PSEUDOLABELS():
         normed_bg_p = F.normalize(bg_protos)
         return normed_bg_p
 
-    def get_bg_attn(self,normed_bg_p):
+    def get_bg_attn(self,normed_bg_p,bg_mask):
         bg_attns = F.relu(torch.sum(normed_bg_p*self.normed_f, dim=1))
         bg_attn = torch.mean(bg_attns, dim=0, keepdim=True) # (len(valid_gridIDs),H,W) --> (1,H,W)
         bg_attn[bg_attn <self.cfg.MODEL.BG_THRESHOLD * bg_attn.max()] = 0
@@ -176,7 +176,7 @@ class generate_PSEUDOLABELS():
                 normed_bg_p=self.normed_bg_p(bg_mask)
 
                 # Background attention maps (u0)
-                region_inside_bboxes,Bg_unary=self.get_bg_attn(normed_bg_p)
+                region_inside_bboxes,Bg_unary=self.get_bg_attn(normed_bg_p,bg_mask)
             
                 # CAMS for foreground classes (uc)
                 Fg_unary=self.get_Fg_CAMS(gt_labels,bboxes)
