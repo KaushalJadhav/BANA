@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 
-def init_wandb(model, cfg) -> None:
+def init_wandb(cfg, wandb_id) -> None:
     """
     Initialize project on Weights & Biases
     Args:
@@ -14,10 +14,10 @@ def init_wandb(model, cfg) -> None:
     wandb.init(
         name=cfg.WANDB.NAME,
         config=cfg,
-        project=cfg.WANDB.PROJECT
+        project=cfg.WANDB.PROJECT,
+        resume=True,
+        id=wandb_id
     )
-
-    wandb.watch(model, log="all")
 
 
 def wandb_log(train_loss, lr, iter):
