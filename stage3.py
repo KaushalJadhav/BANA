@@ -78,7 +78,8 @@ def main(cfg):
         print("WandB checkpoint Loaded with iteration: ", curr_it)
     except:
         print("WandB checkpoint not Loaded")
-        os.makedirs(save_dir)
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
 
     model.train()
     iterator = iter(train_loader)
@@ -114,7 +115,7 @@ def main(cfg):
         loss.backward()
         optimizer.step()
         # Update the learning rate using poly scheduler
-        scheduler.step(it)
+        scheduler.step()
 
         train_loss = loss.item()
         # Logging Loss and LR on wandb
