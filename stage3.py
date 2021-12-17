@@ -12,8 +12,9 @@ import data.transforms_seg as Trs
 from data.voc import VOC_seg
 from configs.defaults import _C
 
-from models.SegNet import DeepLab_LargeFOV
+from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP
 from models.loss import NoiseAwareLoss
+from models.lr_scheduler import PolynomialLR
 
 from tqdm import tqdm
 import wandb
@@ -37,8 +38,15 @@ def main(cfg):
     trainset = VOC_seg(cfg, tr_transforms)
     train_loader = DataLoader(trainset, batch_size=cfg.DATA.BATCH_SIZE, shuffle=True, num_workers=4, pin_memory=True, drop_last=True)
     
-    model = DeepLab_LargeFOV(cfg.DATA.NUM_CLASSES, is_CS=True).cuda()
-    criterion = nn.CrossEntropyLoss()
+    if cfg.NAME == "SegNet_VGG":
+        model = DeepLab_LargeFOV(cfg.DATA.NUM_CLASSES, is_CS=True).cuda()
+    elif cfg.NAME == "SegNet_ASPP":
+        model = DeepLab_ASPP(cfg.DATA.NUM_CLASSES, sync_bn=True, is_CS=True).cuda()
+
+    if cfg.MODEL.LOSS == "NAL":
+        criterion = NoiseAwareLoss(cfg.DATA.NUM_CLASSES, cfg.MODEL.DAMP, cfg.MODEL.LAMBDA)
+    else:
+        criterion = nn.CrossEntropyLoss()
     
     params = model.get_params()
     lr = cfg.SOLVER.LR
@@ -52,9 +60,13 @@ def main(cfg):
         weight_decay=wd,
         momentum=cfg.SOLVER.MOMENTUM
     ) # learning rate and weight decay is kept same for all the layers 
-    scheduler = optim.lr_scheduler.MultiStepLR(optimizer, milestones=cfg.SOLVER.MILESTONES, gamma=0.1)
+
+    # Poly learning rate scheduler according to the paper 
+    scheduler = PolynomialLR(optimizer, step_size=10, iter_max=cfg.SOLVER.MAX_ITER, power=cfg.SOLVER.GAMMA)
     curr_it = 0
 
+    # Save model locally and then on wandb
+    save_dir = './ckpts/'
     # Load pretrained model from wandb if present
     try:
         wandb_checkpoint = wandb.restore('ckpts/checkpoint.pth')    
@@ -66,6 +78,7 @@ def main(cfg):
         print("WandB checkpoint Loaded with iteration: ", curr_it)
     except:
         print("WandB checkpoint not Loaded")
+        os.makedirs(save_dir)
 
     model.train()
     iterator = iter(train_loader)
@@ -79,28 +92,35 @@ def main(cfg):
         img, masks = sample # VOC_seg dataloader returns image and the corresponing (pseudo) label
         ycrf, yret = masks
 
+        # Forward pass
         img = img.to('cuda')
         ycrf = ycrf.to('cuda').long()
-        
+        yret = yret.to('cuda').long()
         img_size = img.size()
         logit = model(img, (img_size[2], img_size[3]))
-        loss = criterion(logit, ycrf)
+
+        # Loss calculation
+        if cfg.MODEL.LOSS == "NAL":
+            feature_map = model.get_features(img.cuda())
+            classifier_weight = torch.clone(model.classifier.weight.data)
+            loss, loss_ce, loss_wce = criterion(logit[0], ycrf[0], yret[0], feature_map[0], classifier_weight)
+        elif cfg.MODEL.LOSS == "CE_CRF":
+            loss = criterion(logit, ycrf)
+        elif cfg.MODEL.LOSS == "CE_RET":
+            loss = criterion(logit, yret)
         
+        # Backward pass
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        scheduler.step()
+        # Update the learning rate using poly scheduler
+        scheduler.step(it)
 
         train_loss = loss.item()
-
         # Logging Loss and LR on wandb
         wandb_log_seg(train_loss, optimizer.param_groups[0]["lr"], it)
 
-        if it%5 == 0:
-            # Save model locally and then on wandb
-            save_dir = './ckpts/'
-            if not os.path.exists(save_dir):
-                os.makedirs(save_dir)
+        if it%500 == 0:
             checkpoint = {
                 'model_state_dict': model.state_dict(),
                 'optim_state_dict': optimizer.state_dict(),

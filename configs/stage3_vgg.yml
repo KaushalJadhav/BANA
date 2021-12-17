@@ -13,7 +13,9 @@ DATA:
 MODEL:
   FREEZE_BN: False
   LAMBDA: 0.1
+  DAMP: 7
   DCRF: [4, 121, 5, 3, 3] # DeepLab-V1-LargFOV
+  LOSS: "CE_CRF"
 
 SOLVER:
   LR: 1e-3 

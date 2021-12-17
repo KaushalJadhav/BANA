@@ -15,6 +15,7 @@ MODEL:
   DAMP: 7 
   LAMBDA: 0.1
   DCRF: [4, 67, 3, 3, 1] # DeepLab-V2-ASPP
+  LOSS: "CE_CRF"
 
 SOLVER:
   LR: 2.5e-4 
