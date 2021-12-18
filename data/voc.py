@@ -122,38 +122,41 @@ class VOC_box(Dataset):
 # stage-3
 class VOC_seg(Dataset):
     def __init__(self, cfg, transforms=None):
-        self.train = False
-        if cfg.DATA.MODE == "train_weak":
+        if cfg.DATA.MODE == "train_weak":   # check whether non augmented case has to be included
             txt_name = "train_aug.txt"
             self.train = True
         if cfg.DATA.MODE == "val":
+            self.train = False
             txt_name = "val.txt"
         if cfg.DATA.MODE == "test":
+            self.train = False
             txt_name = "test.txt"
             
-        f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)
+        f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/SegmentationAug", txt_name)
         self.filenames = [x.split('\n')[0] for x in open(f_path)]
         self.transforms = transforms
         
-        self.annot_folders = ["SegmentationClassAug"]
-        if cfg.DATA.PSEUDO_LABEL_PATH:
-            self.annot_folders = cfg.DATA.PSEUDO_LABEL_PATH
-        if cfg.DATA.MODE == "test":
+        if cfg.DATA.PSEUDO_LABEL_FOLDER:
+            self.annot_folders = cfg.DATA.PSEUDO_LABEL_FOLDER
+        elif cfg.DATA.MODE == "test":
             self.annot_folders = None
+        else: 
+            self.annot_folders = ["SegmentationClassAug"]
         
         self.img_path  = os.path.join(cfg.DATA.ROOT, "JPEGImages", "{}.jpg")
-        if self.annot_folder is not None:
+        if self.annot_folders is not None:
             self.mask_paths = [os.path.join(cfg.DATA.ROOT, folder, "{}.png") for folder in self.annot_folders]
         self.len = len(self.filenames)
+        print("Number of Files Loaded: ", self.len)
     
     def __len__(self):
         return self.len
     
     def __getitem__(self, index):
         fn  = self.filenames[index]
-        img = Image.open(self.img_path.format(fn))
-        if self.annot_folder is not None:
-            masks = [Image.open(mp.format(fn)) for mp in self.mask_paths]
+        img = np.array(Image.open(self.img_path.format(fn)), dtype=np.float32) 
+        if self.annot_folders is not None:
+            masks = [np.array(Image.open(mp.format(fn)), dtype=np.int64) for mp in self.mask_paths]
         else:
             masks = None
             
