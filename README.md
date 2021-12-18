@@ -1,17 +1,31 @@
-# BANA
-This is the implementation of the paper "Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation".
+# [RE] Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation
 
-For more information, please checkout the project site [[website](https://cvlab.yonsei.ac.kr/projects/BANA/)] and the paper [[arXiv](https://arxiv.org/pdf/2104.00905.pdf)].
+This repository is the PyTorch and PyTorch Lightning implementation of the paper ["Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation"](https://arxiv.org/pdf/2104.00905.pdf). It is well documented version of the original repository with the code flow available [here](). The paper address the problem of weakly-supervised semantic segmentation (WSSS) using bounding box annotations by proposing two novel methods:
+- **Background-aware pooling (BAP)**, to extract high-quality pseudo segmentation labels
+- **Noise-aware Loss (NAL)**, to make the networks less susceptible to incorrect labels
 
+<p align="center">
+<a><img src="https://i.ibb.co/rcn1F2D/error.png" alt="error" border="0"><br>Visual comparison of pseudo ground-truth labels</a>
+</p>
+
+For more information, please checkout the project site [[website](https://cvlab.yonsei.ac.kr/projects/BANA/)].
 
 ## Requirements
-* Python >= 3.6
-* PyTorch >= 1.3.0
-* yacs (https://github.com/rbgirshick/yacs)
 
+The code is developed and tested using `Python >= 3.6`. To install the requirements:
 
-## Getting started
-The folder ```data``` should be like this
+```bash
+pip install -r requirements.txt
+```
+
+To setup the dataset:
+
+```bash
+python3 data/setup_dataset.py
+```
+
+Once finished, the folder `data` should be like this:
+
 ```
     data   
     └── VOCdevkit
@@ -26,18 +40,72 @@ The folder ```data``` should be like this
                 └── Y_ret
 ```
 
+## Training
+
+The training procedure is divided into 3 stages and example commands for each have been given below. Hyperparameters can be adjusted accordingly in the correponding configuration files.
+
+1. **Stage 1:** Training the classification network
 
 ```bash
-git clone https://github.com/cvlab-yonsei/BANA.git
-cd BANA
-python stage1.py --config-file configs/stage1.yml --gpu-id 0 # For training a classification network
-python stage2.py --config-file configs/stage2.yml --gpu-id 0 # For generating pseudo labels
+python3 stage1.py --config-file configs/stage1.yml --gpu-id 0
 ```
 
+2. **Stage 2:** Generating pseudo labels
 
-## Download our pseudo labels
-* PASCAL VOC 2012 [[Google Drive](https://drive.google.com/drive/folders/17D9siQWCve6oy1jGdSx-v6Gg6uhi-WBg?usp=sharing)]
+```bash
+python3 stage2.py --config-file configs/stage2.yml --gpu-id 0
+```
 
+3. **Stage 3:** Training a CNN using the pseudo labels
+
+```bash
+python3 stage3.py --config-file configs/stage3_vgg.yml --gpu-id 0
+```
+
+## Evaluation
+
+To evaluate the model on the validation set of Pascal VOC 2012 dataset:
+
+```bash
+python3 
+```
+
+## Pre-trained Models and Pseudo Labels
+
+- Pretrained models:
+
+- Pseudo Labels:
+
+
+## Quantitative Results
+
+We achieve the following results:
+
+- Comparison of pseudo labels on the PASCAL VOC 2012 validation set in terms of mIoU
+
+| **Method**          | **Original Author's Results** | **Our Results** |
+|:-------------------:|:-----------------------------:|:---------------:|
+| **GAP**             | 76.1                          | 75.5            |
+| **BAP Ycrf w/o u0** | 77.8                          | 77              |
+| **BAP Ycrf**        | 79.2                          | 78.8            |
+| **BAP Yret**        | 69.9                          | 69.9            |
+| **BAP Ycrf & Yret** | 68.2                          | 72.7            |
+
+- Comparison of pseudo labels on the MS-COCO training set
+
+- Comparison of mIoU scores using different losses on the PASCAL VOC 2012 training set. We provide both mIoU scores before/after applying DenseCRF
+
+- Quantitative comparison using DeepLab-V1 (VGG-16) on the PASCAL VOC 2012 dataset in terms of mIoU
+    - Weakly supervised learning
+    - Semi-supervised learning
+
+- Quantitative comparison using DeepLab-V2 (ResNet-101) on the PASCAL VOC 2012 dataset in terms of mIoU
+    - Weakly supervised learning
+    - Semi-supervised learning
+
+- Quantitative comparison for instance segmentation on the MS-COCO test set
+
+## Qualitative Results
 
 ## Bibtex
 ```
@@ -48,3 +116,14 @@ python stage2.py --config-file configs/stage2.yml --gpu-id 0 # For generating ps
   year      = {2021},
 }
 ```
+
+## To-do
+
+- Add the code flow link
+- Make requirements.txt
+- Add comments and docstring to data/setup_dataset.py
+- Add more information regarding training (basically explain the different options: aug, naug, bap, gap, ycrf, yret, vgg, resnet, etc.)
+- Write evaluation command
+- Add links to download pre-trained models and pseudo labels (all)
+- Complete the tables
+- Add examples of pseudo labels generated and predictions in qualitative comparison
