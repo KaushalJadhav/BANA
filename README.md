@@ -107,6 +107,10 @@ We achieve the following results:
 
 ## Qualitative Results
 
+## Contributors
+
+This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.ac.in/)
+
 ## Bibtex
 ```
 @inproceedings{oh2021background,
@@ -127,3 +131,4 @@ We achieve the following results:
 - Add links to download pre-trained models and pseudo labels (all)
 - Complete the tables
 - Add examples of pseudo labels generated and predictions in qualitative comparison
+- Add contributors
