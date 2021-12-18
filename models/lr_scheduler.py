@@ -15,6 +15,8 @@ class PolynomialLR(_LRScheduler):
         self.iter_max = iter_max
         self.power = power
         super(PolynomialLR, self).__init__(optimizer, last_epoch)
+        self.last_epoch=last_epoch 
+        self.optimizer=optimizer
 
     def polynomial_decay(self, lr):
         return lr * (1 - float(self.last_epoch) / self.iter_max) ** self.power
