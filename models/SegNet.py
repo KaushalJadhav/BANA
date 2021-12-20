@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import numpy as np
 from .Layers import VGG16, RES101, ASPP
 from .sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
-
+from utils.losses import *
 
 
 class DeepLab_LargeFOV(nn.Module):
@@ -116,3 +116,19 @@ class DeepLab_ASPP(nn.Module):
                     for p in m[1].parameters():
                         if p.requires_grad:
                             yield p
+
+# Can keep this after testing 
+class NoiseAwareLoss(nn.Module):
+
+    def __init__(self, num_classes, gamma, lambda_wgt,batchsize=None):
+        super(NoiseAwareLoss, self).__init__()
+        self.num_classes = num_classes
+        self.gamma = gamma
+        self.lambda_wgt = lambda_wgt
+        self.batchsize=batchsize
+
+    def forward(self, y_pred, ycrf, yret, feature_map, classifier_weight):
+        loss_ce = get_loss_ce(y_pred, ycrf,yret,self.num_classes)
+        loss_wce = get_loss_wceget_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,self.num_classes,self.gamma)
+        total_loss=loss_ce + self.lambda_wgt * loss_wce
+        return total_loss,loss_ce, loss_wce
