@@ -14,7 +14,7 @@ def get_loss_ce(y_pred, ycrf,num_classes):
     num=torch.sum(torch.log(y_pred[s_class]))
     return -num/denom 
 
-def get_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,num_classes,batchsize):
+def get_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,num_classes):
 
     cos=torch.nn.CosineSimilarity(dim=1, eps=1e-6)
     n_classes_arr=torch.from_numpy(np.arange(num_classes))
