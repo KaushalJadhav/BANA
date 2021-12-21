@@ -115,7 +115,7 @@ class VOC_seg(Dataset):
         
         self.annot_folders = ["SegmentationClassAug"]
         if cfg.DATA.PSEUDO_LABEL_FOLDER:
-            self.annot_folders = cfg.DATA.PSEUDO_LABEL_FOLDER
+            self.annot_folders += cfg.DATA.PSEUDO_LABEL_FOLDER
         if cfg.DATA.MODE == "test":
             self.annot_folders = None
         
