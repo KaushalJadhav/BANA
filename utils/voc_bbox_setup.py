@@ -46,6 +46,8 @@ for filename in os.listdir(directory):
     im = Image.fromarray(mask)
     output_name = filename[:-4] + ".png"
     output_dir = os.path.join(root_dir,"BgMaskfromBoxes")
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
     output_path = os.path.join(output_dir,output_name)
     print(output_name)
     im.save(output_path)
