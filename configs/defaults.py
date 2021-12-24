@@ -34,6 +34,7 @@ _C.SOLVER.WEIGHT_DECAY = 0.
 _C.SOLVER.MAX_ITER = 0
 _C.SOLVER.MILESTONES = []   # For Stage 1 only
 _C.SOLVER.GAMMA = 0.        # For Stage 3 only
+_C.SOLVER.STEP_SIZE = 0. # For Stage 3 only
 
 _C.WANDB=CN()
 _C.WANDB.MODE = True
@@ -41,3 +42,4 @@ _C.WANDB.NAME=""            # For Stage 1
 _C.WANDB.PROJECT=""         # For Stage 1 
 _C.WANDB.RESTORE_RUN_PATH="" # For Stage 2
 _C.WANDB.RESTORE_NAME="" # For Stage 2
+_C.WANDB.CHECKPOINT = ""
