@@ -1,5 +1,9 @@
 from utils.metric import Evaluator
 
+import torch
+import numpy as np
+from tqdm import tqdm
+
 def evaluate(cfg, data_loader, model):
     with torch.no_grad():
         model.eval()

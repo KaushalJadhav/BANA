@@ -209,8 +209,8 @@ def main(cfg):
     else:
         print("WandB checkpoint not Loaded")
         checkpoint = None
-        if not os.path.isdir(save_dir):
-            os.makedirs(save_dir)
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
     
     # Call the appropriate mode from main()
     if cfg.DATA.MODE == "train_weak":
