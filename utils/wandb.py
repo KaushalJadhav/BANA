@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 
-def init_wandb(cfg, wandb_id) -> None:
+def init_wandb(cfg) -> None:
     """
     Initialize project on Weights & Biases
     Args:
@@ -16,7 +16,7 @@ def init_wandb(cfg, wandb_id) -> None:
         config=cfg,
         project=cfg.WANDB.PROJECT,
         resume=True,
-        id=wandb_id
+        id=cfg.WANDB.RESTORE_NAME
     )
 
 
