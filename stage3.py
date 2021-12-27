@@ -26,17 +26,23 @@ from utils.evaluate import evaluate
     
 
 def val(cfg, data_loader, model, checkpoint):
+    model = model.cuda()
     model.load_state_dict(checkpoint['model_state_dict'])
     accuracy, iou = evaluate(cfg, data_loader, model)
+    print("Validation Mean Accuracy ", accuracy)
+    print("Validation Mean IoU ", iou)
     wandb.run.summary["Validation Mean Accuracy"] = accuracy
     wandb.run.summary["Validation Mean IoU"] = iou
     # Evaluating the validation dataloader after CRF post-processing
     crf_accuracy, crf_iou = dense_crf(cfg, data_loader, model)
     wandb.run.summary["CRF Validation Mean Accuracy"] = crf_accuracy
     wandb.run.summary["CRF Validation Mean IoU"] = crf_iou   
+    print("CRF Validation Mean Accuracy ", crf_accuracy)
+    print("CRF Validation Mean IoU ", crf_ious)
 
 
 def train(cfg, train_loader, model, checkpoint):    
+    model = model.cuda()
     if cfg.MODEL.LOSS == "NAL":
         criterion = NoiseAwareLoss(cfg.DATA.NUM_CLASSES, 
                                    cfg.MODEL.DAMP, 
@@ -138,7 +144,7 @@ def train(cfg, train_loader, model, checkpoint):
         wandb_log_seg(train_loss, optimizer.param_groups[0]["lr"], it)
 
         save_dir = "./ckpts/"
-        if it%1000 == 0 or it == cfg.SOLVER.MAX_ITER:
+        if it%2500 == 0 or it == cfg.SOLVER.MAX_ITER:
             checkpoint = {
                 'model_state_dict': model.state_dict(),
                 'optim_state_dict': optimizer.state_dict(),
@@ -177,7 +183,9 @@ def main(cfg):
             Trs.Normalize_Caffe(),
         ])
     elif cfg.DATA.MODE == "val":
-        tr_transforms = Trs.Normalize_Caffe()
+        tr_transforms = Trs.Compose([
+            Trs.Normalize_Caffe(),
+        ])
     else:
         print("Incorrect Mode provided!")
         return
@@ -191,13 +199,21 @@ def main(cfg):
                              drop_last=True)
     
     if cfg.NAME == "SegNet_VGG":
-        model = DeepLab_LargeFOV(cfg.DATA.NUM_CLASSES, is_CS=True).cuda()
-        model.backbone.load_state_dict(torch.load(f"./weights/{cfg.MODEL.WEIGHTS}"), strict=False)
+        model = DeepLab_LargeFOV(cfg.DATA.NUM_CLASSES, is_CS=True)
     elif cfg.NAME == "SegNet_ASPP":
         model = DeepLab_ASPP(cfg.DATA.NUM_CLASSES,
                              output_stride=None, 
                              sync_bn=False, 
-                             is_CS=True).cuda()
+                             is_CS=True)
+     
+    # Load pre-trained backbone weights
+    state_dict = torch.load(f"./weights/{cfg.MODEL.WEIGHTS}")
+    # Manually matching the sate dicts if model and pretrained weights (only for res101)
+    if cfg.NAME == "SegNet_ASPP":
+        for key in list(state_dict.keys()):
+            state_dict[key.replace('base.', '')] = state_dict.pop(key)
+    
+    model.backbone.load_state_dict(state_dict, strict=False)
 
     # Save model locally and then on wandb
     save_dir = './ckpts/'

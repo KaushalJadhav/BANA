@@ -6,6 +6,7 @@ from pydensecrf.utils import unary_from_softmax
 
 from utils.metric import scores
 from tqdm import tqdm
+import torch.nn.functional as F
 
 class DENSE_CRF(object):
     def __init__(self, bi_w, bi_xy_std, bi_rgb_std, pos_w=3, pos_xy_std=3, max_iter=10):
@@ -53,7 +54,6 @@ def dense_crf(cfg, data_loader, model):
             # Apply DenseCRF
             prob = dCRF.inference(img, prob)
             label = np.argmax(prob, axis=0)
-            print(label.shape)
             # Append labels for evaluation
             label_preds.append(label)
             label_trues.append(ygt)
