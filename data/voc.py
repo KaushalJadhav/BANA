@@ -103,18 +103,20 @@ class VOC_seg(Dataset):
         self.train = False
         if cfg.DATA.MODE == "train_weak":
             txt_name = "train_aug.txt"
+            f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/SegmentationAug", txt_name)
             self.train = True
         if cfg.DATA.MODE == "val":
             txt_name = "val.txt"
+            f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)
         if cfg.DATA.MODE == "test":
             txt_name = "test.txt"
-            
-        f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/SegmentationAug", txt_name)
+            f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)
+        
         self.filenames = [x.split('\n')[0] for x in open(f_path)]
         self.transforms = transforms
         
         self.annot_folders = ["SegmentationClassAug"]
-        if cfg.DATA.PSEUDO_LABEL_FOLDER:
+        if cfg.DATA.MODE == "train_weak":
             self.annot_folders += cfg.DATA.PSEUDO_LABEL_FOLDER
         if cfg.DATA.MODE == "test":
             self.annot_folders = None

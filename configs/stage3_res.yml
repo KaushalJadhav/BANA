@@ -3,7 +3,7 @@ NAME: "SegNet_ASPP"
 SEED: 0
 
 DATA: 
-  ROOT: "/path-to/VOCdevkit/VOC2012"
+  ROOT: "/home/studio-lab-user/VOCdevkit/VOC2012"
   MODE: "train_weak"
   PSEUDO_LABEL_FOLDER: ["Generation/Y_crf", "Generation/Y_ret"]
   BATCH_SIZE: 10
@@ -23,9 +23,11 @@ SOLVER:
   WEIGHT_DECAY: 5e-4
   MAX_ITER: 20000
   GAMMA: 0.9
+  STEP_SIZE: 10
 
 WANDB:
   MODE: True
   NAME: ""
   PROJECT: "BANA"
-  RESTORE_NAME: "run_name"
+  RESTORE_NAME: "stage3_res_crf"
+  CHECKPOINT: "" # Previous wandb checkpoint to be loaded
