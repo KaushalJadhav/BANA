@@ -38,7 +38,7 @@ def val(cfg, data_loader, model, checkpoint):
     wandb.run.summary["CRF Validation Mean Accuracy"] = crf_accuracy
     wandb.run.summary["CRF Validation Mean IoU"] = crf_iou   
     print("CRF Validation Mean Accuracy ", crf_accuracy)
-    print("CRF Validation Mean IoU ", crf_ious)
+    print("CRF Validation Mean IoU ", crf_iou)
 
 
 def train(cfg, train_loader, model, checkpoint):    
