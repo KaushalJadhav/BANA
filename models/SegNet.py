@@ -127,8 +127,10 @@ class NoiseAwareLoss(nn.Module):
         self.lambda_wgt = lambda_wgt
         self.batchsize=batchsize
 
-    def forward(self, y_pred, ycrf, yret, feature_map, classifier_weight):
+    def forward(self, y_pred, ycrf, yret,img,model):
+        feature_map = model.get_features(img.cuda())
+        classifier_weight = torch.clone(model.classifier.weight.data)
         loss_ce = get_loss_ce(y_pred, ycrf,yret,self.num_classes)
-        loss_wce = get_loss_wceget_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,self.num_classes,self.gamma)
+        loss_wce = get_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,self.num_classes,self.gamma)
         total_loss=loss_ce + self.lambda_wgt * loss_wce
         return total_loss,loss_ce, loss_wce

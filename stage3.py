@@ -12,8 +12,8 @@ from torch.utils.data import DataLoader
 import data.transforms_seg as Trs
 from data.voc import VOC_seg
 
-from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP
-from models.loss import NoiseAwareLoss
+from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP,NoiseAwareLoss
+# from models.loss import NoiseAwareLoss
 from models.lr_scheduler import PolynomialLR
 
 from tqdm import tqdm
@@ -118,13 +118,11 @@ def train(cfg, train_loader, model, checkpoint):
         if cfg.MODEL.LOSS == "NAL":
             ycrf = ycrf.to('cuda').long()
             yret = yret.to('cuda').long()
-            feature_map = model.get_features(img.cuda())
-            classifier_weight = torch.clone(model.classifier.weight.data)
-            loss, loss_ce, loss_wce = criterion(logit[0], 
-                                                ycrf[0], 
-                                                yret[0], 
-                                                feature_map[0], 
-                                                classifier_weight)
+            loss, loss_ce, loss_wce = criterion(logit, 
+                                                ycrf, 
+                                                yret, 
+                                                img, 
+                                                model)
         elif cfg.MODEL.LOSS == "CE_CRF":
             ycrf = ycrf.to('cuda').long()
             loss = criterion(logit, ycrf)
