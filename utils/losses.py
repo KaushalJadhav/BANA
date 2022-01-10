@@ -41,6 +41,9 @@ def get_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,num_classes,gamm
   
     idx = (ycrf[:,:,:,None] == n_classes_arr)    # will be of shape batchsize,...,...,num_classes
     idx= torch.permute(idx,(0,3,1,2))  # we want batchsize, num_classes,...,...
+    print('\ni ',idx.shape)
+    print('\ncmcs ',correlation_map_cstar.shape)
+    print('\ncm ',correlation_map.shape)
     for i in range(num_classes):
       correlation_map_cstar[idx[:,i,:,:]] = correlation_map[idx] 
     confidence_map = (correlation_map_cstar / torch.max(correlation_map, dim=1).values) ** gamma 
