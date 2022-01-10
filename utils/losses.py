@@ -3,6 +3,15 @@ import numpy as np
 import torch.nn.functional as F
 import torch.nn as nn
 
+def cosinesimilarity(x1,x2,dim=0,eps=1e-6):
+  # x1_norm=torch.linalg.norm(x1,dim=dim,ord=2)
+  # x2_norm=torch.linalg.norm(x2,dim=dim,ord=2)
+  F.normalize(x1,p=2.0,dim=dim,eps=eps,out=None)
+  F.normalize(x2,p=2.0,dim=dim,eps=eps,out=None)
+  # denom=max(x1_norm*x2_norm,eps)
+  # return (x1*x2).sum(dim=dim)/denom
+  return (x1*x2).sum(dim=dim)
+
 def get_loss_ce(y_pred, ycrf,yret,num_classes):
     '''
     y_pred and y_crf are batches
@@ -16,17 +25,20 @@ def get_loss_ce(y_pred, ycrf,yret,num_classes):
 
 def get_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,num_classes,gamma):
      
-    cos=torch.nn.CosineSimilarity(dim=2, eps=1e-6)  # 1024
+    # cos=torch.nn.CosineSimilarity(dim=2, eps=1e-6)  # 1024
     n_classes_arr=torch.from_numpy(np.arange(num_classes)).to('cuda')
+
+    feature_map=F.interpolate(feature_map,size=(321,321))
+    classifier_weight=F.interpolate(classifier_weight,size=(321,321))
+    correlation_map = torch.zeros((feature_map.shape[0],num_classes,feature_map.shape[2], feature_map.shape[3])).cuda() 
+    # Confidence Map
+    correlation_map_cstar = torch.zeros((feature_map.shape[0],feature_map.shape[2], feature_map.shape[3])).cuda()
+
     classifier_weight= classifier_weight.unsqueeze(0)  # shape  = (1,num_classes,1024,...,...)
     feature_map= feature_map.unsqueeze(1)              # shape = (batchsize,1,1024,...,...)
-    print("f-",feature_map.shape)
-    print("c-",classifier_weight.shape)
-    correlation_map = torch.zeros((feature_map.shape[0],num_classes,feature_map.shape[2], feature_map.shape[3])).cuda() 
-    correlation_map[:,:num_classes,...] = 1 + cos(feature_map,classifier_weight)  # shape- batchsize,num_classes,...,...
-
-    # Confidence Map
-    correlation_map_cstar = torch.zeros((feature_map.shape[0],feature_map.shape[2], feature_map.shape[3])).cuda()  
+    correlation_map[:,:num_classes,...] = 1 + cosinesimilarity(feature_map,classifier_weight,dim=2,eps=1e-6)
+    # correlation_map[:,:num_classes,...] = 1 + cos(feature_map,classifier_weight)  # shape- batchsize,num_classes,...,...
+  
     idx = (ycrf[:,:,:,None] == n_classes_arr)    # will be of shape batchsize,...,...,num_classes
     idx= torch.permute(idx,(0,3,1,2))  # we want batchsize, num_classes,...,...
     for i in range(num_classes):
