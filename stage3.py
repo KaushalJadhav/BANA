@@ -123,6 +123,8 @@ def train(cfg, train_loader, model, checkpoint):
                                                 yret, 
                                                 img, 
                                                 model)
+            ycrf=ycrf.detach().cpu()
+            yret=yret.detach().cpu()
         elif cfg.MODEL.LOSS == "CE_CRF":
             ycrf = ycrf.to('cuda').long()
             loss = criterion(logit, ycrf)
