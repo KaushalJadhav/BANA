@@ -27,7 +27,9 @@ def get_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,num_classes,gamm
      
     cos=torch.nn.CosineSimilarity(dim=2, eps=1e-6)  # 1024
     n_classes_arr=torch.from_numpy(np.arange(num_classes)).to('cuda')
-
+    
+    ycrf.requires_grad=False
+    yret.requires_grad=False
     feature_map=F.interpolate(feature_map,size=(321,321))
    
     correlation_map = torch.zeros((feature_map.shape[0],num_classes,321,321)).cuda() 
