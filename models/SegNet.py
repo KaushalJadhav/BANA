@@ -130,6 +130,8 @@ class NoiseAwareLoss(nn.Module):
     def forward(self, y_pred, ycrf, yret,img,model):
         feature_map = model.get_features(img.cuda())
         classifier_weight = torch.clone(model.classifier.weight.data)
+        soft_max = nn.Softmax(dim=1)
+        y_pred = soft_max(y_pred)
         loss_ce = get_loss_ce(y_pred, ycrf,yret,self.num_classes)
         loss_wce = get_loss_wce(y_pred,ycrf,yret,feature_map,classifier_weight,self.num_classes,self.gamma)
         total_loss=loss_ce + self.lambda_wgt * loss_wce

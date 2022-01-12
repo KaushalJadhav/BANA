@@ -20,7 +20,7 @@ from tqdm import tqdm
 import wandb
 from configs.defaults import _C
 
-from utils.wandb import wandb_log_seg, init_wandb
+from utils.wandb import wandb_log_seg, init_wandb, wandb_log_NAL
 from utils.densecrf import dense_crf
 from utils.evaluate import evaluate
     
@@ -118,11 +118,7 @@ def train(cfg, train_loader, model, checkpoint):
         if cfg.MODEL.LOSS == "NAL":
             ycrf = ycrf.to('cuda').long()
             yret = yret.to('cuda').long()
-            loss, loss_ce, loss_wce = criterion(logit, 
-                                                ycrf, 
-                                                yret, 
-                                                img, 
-                                                model)
+            loss, loss_ce, loss_wce = criterion(logit, ycrf,yret,img,model)
             ycrf=ycrf.detach().cpu()
             yret=yret.detach().cpu()
         elif cfg.MODEL.LOSS == "CE_CRF":
@@ -139,12 +135,17 @@ def train(cfg, train_loader, model, checkpoint):
         # Update the learning rate using poly scheduler
         scheduler.step()
 
-        train_loss = loss.item()
         # Logging Loss and LR on wandb
-        wandb_log_seg(train_loss, optimizer.param_groups[0]["lr"], it)
+        if cfg.WANDB.MODE:
+            if cfg.MODEL.LOSS == "NAL":
+                train_loss = [loss.item(),loss_ce.item(), loss_wce.item()]
+                wandb_log_NAL(train_loss, optimizer.param_groups[0]["lr"], it)
+            else:
+                train_loss = loss.item()
+                wandb_log_seg(train_loss, optimizer.param_groups[0]["lr"], it)
 
         save_dir = "./ckpts/"
-        if it%2500 == 0 or it == cfg.SOLVER.MAX_ITER:
+        if it%1000 == 0 or it == cfg.SOLVER.MAX_ITER:
             checkpoint = {
                 'model_state_dict': model.state_dict(),
                 'optim_state_dict': optimizer.state_dict(),
@@ -161,7 +162,7 @@ def train(cfg, train_loader, model, checkpoint):
                 wandb.log({
                     "Mean IoU": iou,
                     "Mean Accuracy": accuracy
-                    })
+                    },step=it)
     
             
 def main(cfg):

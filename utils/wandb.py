@@ -15,7 +15,7 @@ def init_wandb(cfg) -> None:
         name=cfg.WANDB.NAME,
         config=cfg,
         project=cfg.WANDB.PROJECT,
-        resume=True,
+        resume="allow",
         id=cfg.WANDB.RESTORE_NAME
     )
 
@@ -42,3 +42,11 @@ def wandb_log_seg(train_loss, lr, it):
         'Learning Rate': lr,
         'Train Iteration': it
     })
+
+def wandb_log_NAL(loss,lr,it):
+    wandb.log({
+        'Total Loss':loss[0],
+        'CE Loss':loss[1],
+        'WCE Loss':loss[2],
+        'Learning Rate': lr
+    },step=it)
