@@ -26,6 +26,7 @@ _C.MODEL.DAMP = 7           # For Stage 3 only
 _C.MODEL.DCRF= []           # For Stage 2&3
 _C.MODEL.GAP = False        # For Stage 1
 _C.MODEL.LOSS = ""          # For Stage 3 only
+_C.MODEL.SCALE =0         # For Stage 3 only
 
 _C.SOLVER = CN()
 _C.SOLVER.LR = 0.

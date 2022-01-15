@@ -15,6 +15,7 @@ MODEL:
   FREEZE_BN: False
   LAMBDA: 0.1
   DAMP: 7
+  SCALE: 20
   DCRF: [4, 121, 5, 3, 3] # DeepLab-V1-LargFOV [bi_w, bi_xy_std, bi_rgb_std, pos_w, pos_xy_std, max_iter]
   LOSS: "NAL"
 
@@ -22,13 +23,13 @@ SOLVER:
   LR: 1e-3 
   MOMENTUM: 0.9
   WEIGHT_DECAY: 5e-4
-  MAX_ITER: 1000 
+  MAX_ITER: 10000 
   GAMMA: 0.9
   STEP_SIZE: 10.0
   
 WANDB:
-  MODE: True
-  NAME: "NAL"
+  MODE: False
+  NAME: "NAL_no_CE"
   PROJECT: "BANA"
-  RESTORE_NAME: "stage3" # Set a unique run id for your experiment
+  RESTORE_NAME: "run8" # Set a unique run id for your experiment
   CHECKPOINT: None # Previous wandb checkpoint to be loaded

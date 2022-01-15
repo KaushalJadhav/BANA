@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 import data.transforms_seg as Trs
 from data.voc import VOC_seg
 
-from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP,NoiseAwareLoss
+from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP,NoiseAwareLoss,CrossEntropyLoss
 # from models.loss import NoiseAwareLoss
 from models.lr_scheduler import PolynomialLR
 
@@ -24,31 +24,15 @@ from utils.wandb import wandb_log_seg, init_wandb, wandb_log_NAL
 from utils.densecrf import dense_crf
 from utils.evaluate import evaluate
     
-
-def val(cfg, data_loader, model, checkpoint):
-    model = model.cuda()
-    model.load_state_dict(checkpoint['model_state_dict'])
-    accuracy, iou = evaluate(cfg, data_loader, model)
-    print("Validation Mean Accuracy ", accuracy)
-    print("Validation Mean IoU ", iou)
-    wandb.run.summary["Validation Mean Accuracy"] = accuracy
-    wandb.run.summary["Validation Mean IoU"] = iou
-    # Evaluating the validation dataloader after CRF post-processing
-    crf_accuracy, crf_iou = dense_crf(cfg, data_loader, model)
-    wandb.run.summary["CRF Validation Mean Accuracy"] = crf_accuracy
-    wandb.run.summary["CRF Validation Mean IoU"] = crf_iou   
-    print("CRF Validation Mean Accuracy ", crf_accuracy)
-    print("CRF Validation Mean IoU ", crf_iou)
-
-
 def train(cfg, train_loader, model, checkpoint):    
     model = model.cuda()
     if cfg.MODEL.LOSS == "NAL":
         criterion = NoiseAwareLoss(cfg.DATA.NUM_CLASSES, 
                                    cfg.MODEL.DAMP, 
-                                   cfg.MODEL.LAMBDA)
+                                   cfg.MODEL.LAMBDA,
+                                   cfg.MODEL.SCALE)
     else:
-        criterion = nn.CrossEntropyLoss(ignore_index=255)
+        criterion = CrossEntropyLoss(ignore_index=255)
         
     lr = cfg.SOLVER.LR
     wd = cfg.SOLVER.WEIGHT_DECAY
@@ -109,24 +93,17 @@ def train(cfg, train_loader, model, checkpoint):
         
         model.train()
 
-        # Forward pass
-        img = img.to('cuda')
-        img_size = img.size()
-        logit = model(img, (img_size[2], img_size[3]))
-
         # Loss calculation
         if cfg.MODEL.LOSS == "NAL":
-            ycrf = ycrf.to('cuda').long()
-            yret = yret.to('cuda').long()
-            loss, loss_ce, loss_wce = criterion(logit, ycrf,yret,img,model)
-            ycrf=ycrf.detach().cpu()
-            yret=yret.detach().cpu()
-        elif cfg.MODEL.LOSS == "CE_CRF":
-            ycrf = ycrf.to('cuda').long()
-            loss = criterion(logit, ycrf)
-        elif cfg.MODEL.LOSS == "CE_RET":
-            yret = yret.to('cuda').long()
-            loss = criterion(logit, yret)
+            loss, loss_ce, loss_wce = criterion(ycrf, yret,img,model)
+            print(loss)
+        else:
+            if cfg.MODEL.LOSS == "CE_CRF":
+                loss = criterion(ycrf,img,model)
+            elif cfg.MODEL.LOSS == "CE_RET":
+                loss = criterion(yret,img,model)
+            else:
+                print("Incorrect type of loss")
         
         # Backward pass
         optimizer.zero_grad()
@@ -163,7 +140,23 @@ def train(cfg, train_loader, model, checkpoint):
                     "Mean IoU": iou,
                     "Mean Accuracy": accuracy
                     },step=it)
-    
+
+def val(cfg, data_loader, model, checkpoint):
+    model = model.cuda()
+    model.load_state_dict(checkpoint['model_state_dict'])
+    accuracy, iou = evaluate(cfg, data_loader, model)
+    print("Validation Mean Accuracy ", accuracy)
+    print("Validation Mean IoU ", iou)
+    wandb.run.summary["Validation Mean Accuracy"] = accuracy
+    wandb.run.summary["Validation Mean IoU"] = iou
+    # Evaluating the validation dataloader after CRF post-processing
+    crf_accuracy, crf_iou = dense_crf(cfg, data_loader, model)
+    wandb.run.summary["CRF Validation Mean Accuracy"] = crf_accuracy
+    wandb.run.summary["CRF Validation Mean IoU"] = crf_iou   
+    print("CRF Validation Mean Accuracy ", crf_accuracy)
+    print("CRF Validation Mean IoU ", crf_iou)
+
+
             
 def main(cfg):
     if cfg.SEED:
