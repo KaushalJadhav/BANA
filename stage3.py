@@ -104,7 +104,8 @@ def train(cfg, train_loader, model, checkpoint):
                 loss = criterion(yret,img,model)
             else:
                 print("Incorrect type of loss")
-        
+        if cfg.WANDB.MODE:
+            wandb.watch(model, criterion=loss, log="all")
         # Backward pass
         optimizer.zero_grad()
         loss.backward()
