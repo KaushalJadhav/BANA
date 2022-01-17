@@ -21,7 +21,7 @@ pip install -r requirements.txt
 To setup the dataset:
 
 ```bash
-bash setup_voc.bash
+bash setup_voc.bash /path-to-data-directory
 ```
 
 Once finished, the folder `data` should be like this:
@@ -74,8 +74,7 @@ python3
 
 - Pretrained models:
 
-- Pseudo Labels:
-
+- Pseudo Labels: [Link](https://drive.google.com/drive/folders/1wC9qr1lE_JN0Htrf0SfPhKz4AdqQ0zbt?usp=sharing)
 
 ## Quantitative Results
 
@@ -124,7 +123,6 @@ This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.
 ## To-do
 
 - Add the code flow link
-- Make requirements.txt
 - Add comments and docstring to data/setup_dataset.py
 - Add more information regarding training (basically explain the different options: aug, naug, bap, gap, ycrf, yret, vgg, resnet, etc.)
 - Write evaluation command
