@@ -21,7 +21,7 @@ pip install -r requirements.txt
 To setup the dataset:
 
 ```bash
-python3 data/setup_dataset.py
+bash setup_voc.bash
 ```
 
 Once finished, the folder `data` should be like this:
