@@ -27,8 +27,7 @@ SOLVER:
   STEP_SIZE: 10.0
   
 WANDB:
-  MODE: False
-  NAME: "NAL_no_CE"
+  MODE: True
   PROJECT: "BANA"
-  RESTORE_NAME: "run8" # Set a unique run id for your experiment
-  CHECKPOINT: None # Previous wandb checkpoint to be loaded
+  RESTORE_NAME: "VGG Run" # Set a unique run id for your experiment
+  CHECKPOINT: "" # Previous wandb checkpoint to be loaded
