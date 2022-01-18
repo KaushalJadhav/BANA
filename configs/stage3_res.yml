@@ -15,7 +15,7 @@ MODEL:
   DAMP: 7 
   LAMBDA: 0.1
   DCRF: [4, 67, 3, 3, 1] # DeepLab-V2-ASPP
-  LOSS: "CE_CRF"
+  LOSS: "NAL"
 
 SOLVER:
   LR: 2.5e-4 
@@ -29,5 +29,5 @@ WANDB:
   MODE: True
   NAME: ""
   PROJECT: "BANA"
-  RESTORE_NAME: "stage3_res_crf"
+  RESTORE_NAME: "RES Run"
   CHECKPOINT: "" # Previous wandb checkpoint to be loaded

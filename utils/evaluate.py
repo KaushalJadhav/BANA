@@ -15,7 +15,7 @@ def evaluate(cfg, data_loader, model):
             # Forward pass
             img = img.to('cuda')
             img_size = img.size()
-            logit = model(img, (img_size[2], img_size[3]))
+            logit, feature_map = model(img, (img_size[2], img_size[3]))
             pred = torch.argmax(logit, dim=1)
             pred = pred.cpu().detach().numpy()
             ygt = ygt.cpu().detach().numpy()

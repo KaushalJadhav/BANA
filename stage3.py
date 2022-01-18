@@ -12,9 +12,9 @@ from torch.utils.data import DataLoader
 import data.transforms_seg as Trs
 from data.voc import VOC_seg
 
-from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP,NoiseAwareLoss,CrossEntropyLoss
-# from models.loss import NoiseAwareLoss
-from models.lr_scheduler import PolynomialLR
+from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP
+from models.NAL import NoiseAwareLoss
+from models.PolyScheduler import PolynomialLR
 
 from tqdm import tqdm
 import wandb
@@ -29,10 +29,9 @@ def train(cfg, train_loader, model, checkpoint):
     if cfg.MODEL.LOSS == "NAL":
         criterion = NoiseAwareLoss(cfg.DATA.NUM_CLASSES, 
                                    cfg.MODEL.DAMP, 
-                                   cfg.MODEL.LAMBDA,
-                                   cfg.MODEL.SCALE)
+                                   cfg.MODEL.LAMBDA)
     else:
-        criterion = CrossEntropyLoss(ignore_index=255)
+        criterion = nn.CrossEntropyLoss(ignore_index=255)
         
     lr = cfg.SOLVER.LR
     wd = cfg.SOLVER.WEIGHT_DECAY
@@ -93,19 +92,29 @@ def train(cfg, train_loader, model, checkpoint):
         
         model.train()
 
+        # Forward pass
+        img = img.to('cuda')
+        img_size = img.size()
+        logit, feature_map = model(img, (img_size[2], img_size[3]))
+
         # Loss calculation
         if cfg.MODEL.LOSS == "NAL":
-            loss, loss_ce, loss_wce = criterion(ycrf, yret,img,model)
-            print(loss)
-        else:
-            if cfg.MODEL.LOSS == "CE_CRF":
-                loss = criterion(ycrf,img,model)
-            elif cfg.MODEL.LOSS == "CE_RET":
-                loss = criterion(yret,img,model)
-            else:
-                print("Incorrect type of loss")
-        if cfg.WANDB.MODE:
-            wandb.watch(model, criterion=loss, log="all")
+            ycrf = ycrf.cuda().long()
+            yret = yret.cuda().long()
+            classifier_weight = torch.clone(model.classifier.weight.data)
+            loss = criterion(logit, 
+                             ycrf, 
+                             yret, 
+                             feature_map, 
+                             classifier_weight)
+            
+        elif cfg.MODEL.LOSS == "CE_CRF":
+            ycrf = ycrf.to('cuda').long()
+            loss = criterion(logit, ycrf)
+        elif cfg.MODEL.LOSS == "CE_RET":
+            yret = yret.to('cuda').long()
+            loss = criterion(logit, yret)
+
         # Backward pass
         optimizer.zero_grad()
         loss.backward()
@@ -113,14 +122,9 @@ def train(cfg, train_loader, model, checkpoint):
         # Update the learning rate using poly scheduler
         scheduler.step()
 
+        train_loss = loss.item()
         # Logging Loss and LR on wandb
-        if cfg.WANDB.MODE:
-            if cfg.MODEL.LOSS == "NAL":
-                train_loss = [loss.item(),loss_ce.item(), loss_wce.item()]
-                wandb_log_NAL(train_loss, optimizer.param_groups[0]["lr"], it)
-            else:
-                train_loss = loss.item()
-                wandb_log_seg(train_loss, optimizer.param_groups[0]["lr"], it)
+        wandb_log_seg(train_loss, optimizer.param_groups[0]["lr"], it)
 
         save_dir = "./ckpts/"
         if it%1000 == 0 or it == cfg.SOLVER.MAX_ITER:
@@ -140,7 +144,7 @@ def train(cfg, train_loader, model, checkpoint):
                 wandb.log({
                     "Mean IoU": iou,
                     "Mean Accuracy": accuracy
-                    },step=it)
+                    })
 
 def val(cfg, data_loader, model, checkpoint):
     model = model.cuda()
@@ -157,8 +161,7 @@ def val(cfg, data_loader, model, checkpoint):
     print("CRF Validation Mean Accuracy ", crf_accuracy)
     print("CRF Validation Mean IoU ", crf_iou)
 
-
-            
+   
 def main(cfg):
     if cfg.SEED:
         np.random.seed(cfg.SEED)
