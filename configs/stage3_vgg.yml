@@ -6,7 +6,7 @@ DATA:
   ROOT: "/kaggle/input/agv-bana-voc/kaggle/working/data/VOCdevkit/VOC2012"
   MODE: "train_weak"
   PSEUDO_LABEL_FOLDER: ["Generation/Y_crf", "Generation/Y_ret"]
-  BATCH_SIZE: 1 # Change according to val or train mode
+  BATCH_SIZE: 20 # Change according to val or train mode
   CROP_SIZE: (321, 321)
   NUM_CLASSES: 21
   
@@ -15,7 +15,6 @@ MODEL:
   FREEZE_BN: False
   LAMBDA: 0.1
   DAMP: 7
-  SCALE: 20
   DCRF: [4, 121, 5, 3, 3] # DeepLab-V1-LargFOV [bi_w, bi_xy_std, bi_rgb_std, pos_w, pos_xy_std, max_iter]
   LOSS: "NAL"
 
@@ -23,7 +22,7 @@ SOLVER:
   LR: 1e-3 
   MOMENTUM: 0.9
   WEIGHT_DECAY: 5e-4
-  MAX_ITER: 10000 
+  MAX_ITER: 23805
   GAMMA: 0.9
   STEP_SIZE: 10.0
   

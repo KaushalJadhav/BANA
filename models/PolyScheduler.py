@@ -5,10 +5,7 @@
 # URL:    https://kazuto1011.github.io
 # Date:   09 January 2019
 
-
 from torch.optim.lr_scheduler import _LRScheduler
-
-
 class PolynomialLR(_LRScheduler):
     def __init__(self, optimizer, step_size, iter_max, power, last_epoch=-1):
         self.step_size = step_size
