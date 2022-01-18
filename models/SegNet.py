@@ -82,7 +82,8 @@ class DeepLab_ASPP(nn.Module):
                 m.eval()
                 
     def forward(self, x, img_size):
-        return self.forward_classifier(self.get_features(x), img_size)
+        t = self.get_features(x)
+        return self.forward_classifier(t, img_size), t
     
     def get_features(self, x):
         x = self.backbone(x)
