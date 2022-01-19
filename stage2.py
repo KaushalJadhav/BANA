@@ -1,12 +1,10 @@
 import os
-import sys
+import wandb
 import random
 import argparse
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 from torch.utils.data import DataLoader
 from PIL import Image
 from tqdm import tqdm
@@ -16,9 +14,6 @@ from data.voc import VOC_box
 from configs.defaults import _C
 from models.ClsNet import Labeler, pad_for_grid
 from utils.densecrf import DENSE_CRF
-
-
-import wandb
 
 
 def main(cfg):
