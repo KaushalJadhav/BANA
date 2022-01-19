@@ -21,9 +21,14 @@ pip install -r requirements.txt
 To setup the dataset:
 
 ```bash
-bash setup_voc.bash /path-to-data-directory
+bash data/setup_voc.bash /path-to-data-directory
 ```
 
+To generate background masks:
+```bash
+cd /path-to-data-directory
+python3 voc_bbox_setup.py
+```
 Once finished, the folder `data` should be like this:
 
 ```
