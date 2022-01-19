@@ -12,7 +12,6 @@ DATA:
 # Number of classes
 # 21 for VOC and 80 for COCO
   NUM_CLASSES: 21 
-  # MODE: "train"
 # Batch size to generate batches
   BATCH_SIZE: 20
 # Images are cropped to dimension specified CROP_SIZE
@@ -22,30 +21,31 @@ MODEL:
   # Name of file to load pretrained weights
   WEIGHTS: "vgg_caffe.pth"
   # From PyCaffe and VGG-16 ImageNet pretrained weights [vgg16_20M.caffemodel] (http://liangchiehchen.com/projects/Init%20Models.html).
+  GAP: False # CHECK
   # Saving the models. 
   # If SAVING=True, enables saving checkpoint , else disables it.
   SAVING: True 
   # Directory to save models if SAVING=True
   SAVE_DIR: "/content/drive/MyDrive/Saved_models/ClsNet"
+  SAVE_AFTER_N_EPOCHS: 0  # Number of epochs after which model is to be saved.When set equal to 0 saving after epochs disabled.
+  SAVE_AFTER_N_STEPS : 0  # Number of steps after which model is to be saved.When set equal to 0 saving after steps disabled.
   ROI_SIZE: [2,2]
   GRID_SIZE: 4
 
 SOLVER:
-  # Learning rate
-  LR: 1e-3 
-  # Momentum used in SGD
-  MOMENTUM: 0.9
-  # Weight decay used in SGD
-  WEIGHT_DECAY: 5e-4
-  # Milestones used in lr_scheduler
-  MILESTONES: [5000]
-  # Maximum iterations in training  
-  MAX_ITER: 8000
+  LR: 1e-3   # Learning rate
+  MOMENTUM: 0.9  # Momentum used in SGD
+  WEIGHT_DECAY: 5e-4   # Weight decay used in SGD
+  MILESTONES: [5000] # Milestones used in lr_scheduler
+  MAX_ITER: 8000 # Maximum iterations in training.When set equal to -1, disables it.
+  MAX_EPOCH: -1 # Maximum epochs in training.When set equal to -1, disables it.
 
 LOGGER:
-  LOGGING: True
-  TYPE: "wandb"
-  PROJECT: "BANA"
-  ID: "give_name"   
-  RESUME: True
+  LOGGING: True  # enable/ disable logging
+  TYPE: "wandb"  # logger to be used
+  NAME: "ClsNet" # If logger is wandb, name of the run
+  PROJECT: "BANA" # If logger is wandb, name of the project
+  ID: "give_name"  # If logger is wandb, run id
+  RESUME: True    # If logger is wandb, resume the previous run if True
+  CHECKPOINT: "" # If logger is wandb, previous wandb checkpoint to be loaded
 

@@ -2,7 +2,7 @@ from pytorch_lightning import Trainer
 import os
 import sys
 from utils.util import seed,process_cfg,checkpoint_callback_stage1
-from Extension.stage1.Lightningextension import VOCDataModule,LabelerLitModel
+from extension.stage1.Lightningextension import VOCDataModule,LabelerLitModel
 from utils.logging import get_logger
 try:
     import wandb
@@ -28,11 +28,14 @@ def stage1(args):
     # create model
     model=LabelerLitModel(cfg)
 
-    checkpoint_callback=checkpoint_callback_stage1(cfg,args.save_after_n_epochs,args.save_after_n_steps)
+    checkpoint_callback=checkpoint_callback_stage1(cfg)
+    resume=None
     if args.resume is not "None":
         resume=f"{cfg.MODEL.SAVE_DIR}/{args.resume}"
-    else:
-        resume=None 
+    elif cfg.LOGGER.LOGGING and cfg.LOGGER.TYPE.lower()=='wandb':
+            if cfg.LOGGER.CHECKPOINT is not None:
+                f_path = wandb.restore(os.path.join(cfg.MODEL.SAVE_DIR,cfg.LOGGER.CHECKPOINT))
+                resume = f_path.name 
 
     # train/eval the model
 
@@ -41,8 +44,8 @@ def stage1(args):
     # if cfg.LOGGER.LOGGING=True logging will be enabled, else disabled
     deterministic=True, 
     #sets whether PyTorch operations must use deterministic algorithms.
-    max_steps=min(cfg.SOLVER.MAX_ITER,args.step),
-    max_epochs=args.epoch,
+    max_steps=cfg.SOLVER.MAX_ITER,
+    max_epochs=cfg.SOLVER.MAX_EPOCH,
     enable_checkpointing=cfg.MODEL.SAVING, 
     # if cfg.MODEL.SAVING=True checkpointing will be enabled, else disabled
     callbacks=checkpoint_callback,

@@ -130,18 +130,22 @@ class Labeler(nn.Module):
                 roi = F.grid_sample(feature_map, grid) # (1,dims,BH,BW)
                 GAP_attn = torch.ones(1,1,*roi.shape[-2:]).type_as(roi)
                 ID_list = valid_cellIDs[batch_id]
-                if ind_valid_bg_mask[batch_id] and len(ID_list):
-                    normed_roi = F.normalize(roi, dim=1)
-                    valid_bg_p = bg_protos[batch_id, ID_list] #(N,GS**2,dims,1,1)->(len(ID_list),dims,1,1)
-                    normed_bg_p = F.normalize(valid_bg_p, dim=1)
-                    bg_attns = F.relu(torch.sum(normed_roi*normed_bg_p, dim=1, keepdim=True)) 
-                    bg_attn = torch.mean(bg_attns, dim=0, keepdim=True)
-                    fg_attn = 1 - bg_attn
-                    fg_by_BAP = self.weighted_avg_pool_2d(roi, fg_attn) # (1,256,OH,OW)
-                    fg_protos.append(fg_by_BAP)
-                else:
+                if GAP: 
                     fg_by_GAP = self.weighted_avg_pool_2d(roi, GAP_attn) # (1,256,OH,OW)
                     fg_protos.append(fg_by_GAP)
+                else:                 
+                    if ind_valid_bg_mask[batch_id] and len(ID_list):
+                        normed_roi = F.normalize(roi, dim=1)
+                        valid_bg_p = bg_protos[batch_id, ID_list] #(N,GS**2,dims,1,1)->(len(ID_list),dims,1,1)
+                        normed_bg_p = F.normalize(valid_bg_p, dim=1)
+                        bg_attns = F.relu(torch.sum(normed_roi*normed_bg_p, dim=1, keepdim=True)) 
+                        bg_attn = torch.mean(bg_attns, dim=0, keepdim=True)
+                        fg_attn = 1 - bg_attn
+                        fg_by_BAP = self.weighted_avg_pool_2d(roi, fg_attn) # (1,256,OH,OW)
+                        fg_protos.append(fg_by_BAP)
+                    else:
+                        fg_by_GAP = self.weighted_avg_pool_2d(roi, GAP_attn) # (1,256,OH,OW)
+                        fg_protos.append(fg_by_GAP)
         fg_protos = torch.cat(fg_protos, dim=0)
         return fg_protos
     
@@ -171,13 +175,14 @@ class Labeler(nn.Module):
         bg_protos = bg_protos / (denom_grids + 1e-12) # (N,GS**2,dims,1,1)
         return bg_protos
     
-    def forward(self, img, bboxes, batchID_of_box, bg_mask, ind_valid_bg_mask):
+    def forward(self, img, bboxes, batchID_of_box, bg_mask, ind_valid_bg_mask, GAP = False):
         '''
-        img (float32)            : array of shape(N,3,H,W) 
-        bboxes (float32)         : array of shape(K,5) 
-        batchID_of_box (int64)   : batch index of box shape(K,) 
-        bg_mask (float32)        : background mask of shape(N,1,H,W) 
-        ind_valid_bg_mask (uint8): shape(N,)     # CHECK
+        img               : (N,3,H,W) float32
+        bboxes            : (K,5) float32
+        batchID_of_box    : (K,) int64
+        bg_mask           : (N,1,H,W) float32
+        ind_valid_bg_mask : (N,) uint8
+        GAP               : bool
         '''
         features = self.get_features(img) # (N,256,105,105)
         batch_size,dims,fH,fW = features.shape
@@ -190,7 +195,7 @@ class Labeler(nn.Module):
         ##########################################################
         padded_features = pad_for_grid(features, self.GS)
         bg_protos = self.get_bg_prototypes(padded_features, padded_mask, grid_bg, self.GS)
-        fg_protos = self.BAP(features, bboxes, batchID_of_box, bg_protos, valid_cellIDs, ind_valid_bg_mask)
+        fg_protos = self.BAP(features, bboxes, batchID_of_box, bg_protos, valid_cellIDs, ind_valid_bg_mask, GAP)
         ##########################################################
         num_fgs = fg_protos.shape[0]
         fg_protos = fg_protos.view(num_fgs,dims,-1).permute(0,2,1).contiguous().view(-1,dims,1,1) # (num_fgs,dims,OH,OW) --> (num_fgs*OH*OW,dims,1,1)

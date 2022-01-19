@@ -1,11 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from .Layers import VGG16, RES101, ASPP
 from .sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
-
-
 
 class DeepLab_LargeFOV(nn.Module):
     def __init__(self, num_classes, is_CS=False):
@@ -18,7 +15,8 @@ class DeepLab_LargeFOV(nn.Module):
         self.from_scratch_layers = [self.classifier]
         
     def forward(self, x, img_size):
-        return self.forward_classifier(self.get_features(x), img_size)
+        t = self.get_features(x)
+        return self.forward_classifier(t, img_size), t
     
     def get_features(self, x):
         return self.backbone(x)
@@ -54,9 +52,7 @@ class DeepLab_LargeFOV(nn.Module):
                     else:
                         params[1].append(m.bias)
         return params
-
-
-                            
+                         
 class DeepLab_ASPP(nn.Module):
     def __init__(self, num_classes, output_stride, sync_bn, is_CS=True):
         super().__init__()
@@ -83,7 +79,8 @@ class DeepLab_ASPP(nn.Module):
                 m.eval()
                 
     def forward(self, x, img_size):
-        return self.forward_classifier(self.get_features(x), img_size)
+        t = self.get_features(x)
+        return self.forward_classifier(t, img_size), t
     
     def get_features(self, x):
         x = self.backbone(x)
@@ -116,4 +113,3 @@ class DeepLab_ASPP(nn.Module):
                     for p in m[1].parameters():
                         if p.requires_grad:
                             yield p
-

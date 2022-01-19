@@ -19,7 +19,7 @@ def wandblogging(cfg,model):
         resume=None
         
     wandb_logger = WandbLogger(
-        name=cfg.NAME,
+        name=cfg.LOGGER.NAME,
         project=cfg.LOGGER.PROJECT, # group runs in the specified project
         log_model='all', # log all new checkpoints during training
         id=cfg.LOGGER.ID,  # run id, necessary for resuming

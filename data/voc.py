@@ -121,27 +121,34 @@ class VOC_box(Dataset):
 
 # stage-3
 class VOC_seg(Dataset):
+    '''
+    loads VOC dataset 
+    Args:
+         cfg  : parameters loaded from config file 
+         transforms (List): transforms to be applied to images
+    ''' 
     def __init__(self, cfg, transforms=None):
-        if cfg.DATA.MODE == "train_weak":   # check whether non augmented case has to be included
+        if cfg.DATA.MODE == "train_weak":
             txt_name = "train_aug.txt"
+            f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/SegmentationAug", txt_name)
             self.train = True
         if cfg.DATA.MODE == "val":
             self.train = False
             txt_name = "val.txt"
+            f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)
         if cfg.DATA.MODE == "test":
             self.train = False
             txt_name = "test.txt"
-            
-        f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/SegmentationAug", txt_name)
+            f_path = os.path.join(cfg.DATA.ROOT, "ImageSets/Segmentation", txt_name)
+        
         self.filenames = [x.split('\n')[0] for x in open(f_path)]
         self.transforms = transforms
         
-        if cfg.DATA.PSEUDO_LABEL_FOLDER:
-            self.annot_folders = cfg.DATA.PSEUDO_LABEL_FOLDER
-        elif cfg.DATA.MODE == "test":
+        self.annot_folders = ["SegmentationClassAug"]
+        if cfg.DATA.MODE == "train_weak":
+            self.annot_folders += cfg.DATA.PSEUDO_LABEL_FOLDER
+        if cfg.DATA.MODE == "test":
             self.annot_folders = None
-        else: 
-            self.annot_folders = ["SegmentationClassAug"]
         
         self.img_path  = os.path.join(cfg.DATA.ROOT, "JPEGImages", "{}.jpg")
         if self.annot_folders is not None:
@@ -164,3 +171,33 @@ class VOC_seg(Dataset):
             img, masks = self.transforms(img, masks)
         
         return img, masks
+    
+    def get_classes(self):
+        '''
+        Returns:
+                 CLASSES (tuple): list of class names
+        '''
+        CLASSES = (
+            "background", 
+            "aeroplane", 
+            "bicycle", 
+            "bird", 
+            "boat", 
+            "bottle", 
+            "bus", 
+            "car", 
+            "cat", 
+            "chair", 
+            "cow", 
+            "diningtable", 
+            "dog", 
+            "horse", 
+            "motorbike",
+            "person",
+            "pottedplant", 
+            "sheep",
+            "sofa", 
+            "train",
+            "tvmonitor"
+            ) 
+        return CLASSES

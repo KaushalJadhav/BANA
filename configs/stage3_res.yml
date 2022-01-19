@@ -1,23 +1,59 @@
 NAME: "SegNet_ASPP"
 
-SEED: 13
+SEED: 0
 
 DATA: 
-  ROOT: "/workspace/BDH/data/VOCdevkit/VOC2012"
-  MODE: "train"
-  PSEUDO_LABEL_FOLDER: ["Ycrf", "Yret"]
+    
+  # Root directory for image database 
+  ROOT: "/content/VOCdevkit/VOC2012"
+  # Name of the dataset
+  DATASET: "VOC"
+  MODE: "train_weak"  # "train_weak" for weakly supervised training, "val" for validation, "test" for test dataset
+  # Path where generated pseudolabels are stored
+  PSEUDO_LABEL_FOLDER: ["Generation/Y_crf", "Generation/Y_ret"]
+  # Number of classes
+  # 21 for VOC and 80 for COCO
+  NUM_CLASSES: 21 
+  # Batch size to generate batches
   BATCH_SIZE: 10
-  CROP_SIZE: 321
+  # Images are cropped to dimension specified CROP_SIZE
+  CROP_SIZE: (321, 321)
   
 MODEL:
+  # freeze batchnorm
   FREEZE_BN: False
+  # Damping parameter used in NAL
   DAMP: 7 
+  # lambda parameter used in NAL
   LAMBDA: 0.1
   DCRF: [4, 67, 3, 3, 1] # DeepLab-V2-ASPP
+  # Type of loss
+  # "CE_CRF" for CRF Cross-Entropy loss
+  # "CE_RET" for RET Cross-Entropy loss
+  # "NAL" for Noise Aware Loss
+  LOSS: "NAL"
+  # Saving the models. 
+  # If SAVING=True, enables saving checkpoint , else disables it.
+  SAVING: True 
+  # Directory to save models if SAVING=True
+  SAVE_DIR: "/content/drive/MyDrive/Saved_models/"
+  SAVE_AFTER_N_EPOCHS: 0  # Number of epochs after which model is to be saved.When set equal to 0 saving after epochs disabled.
+  SAVE_AFTER_N_STEPS : 0  # Number of steps after which model is to be saved.When set equal to 0 saving after steps disabled.
 
 SOLVER:
-  LR: 2.5e-4 
-  MOMENTUM: 0.9
-  WEIGHT_DECAY: 5e-4
-  MAX_ITER: 20000
-  GAMMA: 0.9
+  LR: 2.5e-4   # Learning rate
+  MOMENTUM: 0.9 # Momentum used in SGD
+  WEIGHT_DECAY: 5e-4 # Weight decay used in SGD
+  MAX_ITER: 20000 # Maximum iterations in training.When set equal to -1, disables it.
+  MAX_EPOCH: -1 # Maximum epochs in training.When set equal to -1, disables it.
+  GAMMA: 0.9  # 
+  STEP_SIZE: 10.0 #
+
+LOGGER:
+  LOGGING: True  # enable/ disable logging
+  TYPE: "wandb"  # logger to be used
+  NAME: "ResNet" # If logger is wandb, name of the run
+  PROJECT: "BANA" # If logger is wandb, name of the project
+  ID: "give_name"  # If logger is wandb, run id
+  RESUME: True    # If logger is wandb, resume the previous run if True
+  CHECKPOINT: "" # If logger is wandb, previous wandb checkpoint to be loaded

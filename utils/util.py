@@ -47,15 +47,10 @@ def get_args():
     parser.add_argument("--stage", type=str, default="1", help="select stage")
     parser.add_argument("--gpu-id", type=str, default="0", help="select a GPU index")
     parser.add_argument("--resume", type=str, default="None", help="filename of the checkpoint")
-    parser.add_argument("--epoch", type=int, default=100, help="Number of maximum epochs.When set equal to -1, disables it.")
-    parser.add_argument("--step", type=int, default=8000, help="Number of maximum steps.When set equal to -1, disables it.")
-    parser.add_argument("--save_after_n_epochs", type=int, default=0, 
-    help="Number of epochs after which model is to be saved.When set equal to 0 saving after epochs disabled.")
-    parser.add_argument("--save_after_n_steps", type=int, default=0, 
-    help="Number of steps after which model is to be saved.When set equal to 0 saving after steps disabled.")
+    
     return parser.parse_args()
 
-def checkpoint_callback_stage1(cfg,n_epoch,n_step):
+def checkpoint_callback_stage1(cfg):
     '''
     Custom callback for saving checkpoint
     Args:
@@ -67,17 +62,19 @@ def checkpoint_callback_stage1(cfg,n_epoch,n_step):
     '''
     if not cfg.MODEL.SAVING:   # Disable saving
         return None
-    if epoch==0 and step==0:
+    n_epoch = cfg.MODEL.SAVE_AFTER_N_EPOCHS
+    n_step = cfg.MODEL.SAVE_AFTER_N_STEPS
+    if n_epoch==0 and n_step==0:
         return None 
     return ModelCheckpoint(
-        dirpath=f"{cfg.NAME}",                        # directory path to save checkpoints
+        dirpath=f"{cfg.MODEL.SAVE_DIR}",              # directory path to save checkpoints
         filename='{epoch}-{step}-{train_loss:.2f}',   
         save_last=True,                               # save last checkpoint
         save_top_k =1,                                # save the best checkpoint
         monitor='train/loss',                         # check train loss
         mode='min',                     # criteria for best checkpoint is minimum train loss
         every_n_epochs=n_epoch,              # if n_epoch is not None after epochs=n_epoch checkpoint saved.
-        save_on_train_epoch_end=True if epoch is not None else False,   
+        save_on_train_epoch_end=True if n_epoch is not None else False,   
         #  if True checkpoint saved after train_epoch_end
         every_n_train_steps=n_step      # if n_step is not None after steps=n_step checkpoint saved.  
         )    

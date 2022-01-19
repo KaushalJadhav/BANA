@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader
 import data.transforms_bbox as Tr
 from data.voc import VOC_box
 from models.ClsNet import Labeler
-from utils.BgMaskfromBoxes import VOC_BgMaskfromBoxes
 
 def custom_collate(batch):
     '''
@@ -69,8 +68,6 @@ class VOCDataModule(pl.LightningDataModule):
         '''
         setup data for loading it into dataloaders 
         '''
-        print("Generating Background masks")
-        VOC_BgMaskfromBoxes(self.cfg.DATA.ROOT)
         self.train_dataset = VOC_box(self.cfg, self.transforms, True)
         self.val_dataset = VOC_box(self.cfg, self.transforms, False)
 
@@ -166,7 +163,7 @@ class LabelerLitModel(pl.LightningModule):
         bg_mask = sample["bg_mask"]
         batchID_of_box = sample["batchID_of_box"]
         ind_valid_bg_mask = bg_mask.mean(dim=(1,2,3)) > 0.125 # This is because VGG16 has output stride of 8.
-        logits = self.model(img, bboxes, batchID_of_box, bg_mask, ind_valid_bg_mask)
+        logits = self.model(img, bboxes, batchID_of_box, bg_mask, ind_valid_bg_mask, GAP=self.cfg.MODEL.GAP)
         logits = logits[...,0,0]
         fg_t = bboxes[:,-1][:,None].expand(bboxes.shape[0], np.prod(self.cfg.MODEL.ROI_SIZE))
         fg_t = fg_t.flatten().long()
