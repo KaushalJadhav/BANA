@@ -1,13 +1,13 @@
 import os
-import sys
 import random
 import argparse
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from tqdm import tqdm
+import wandb
 
 import data.transforms_seg as Trs
 from data.voc import VOC_seg
@@ -16,14 +16,13 @@ from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP
 from models.NAL import NoiseAwareLoss
 from models.PolyScheduler import PolynomialLR
 
-from tqdm import tqdm
-import wandb
 from configs.defaults import _C
 
 from utils.wandb import wandb_log_seg, init_wandb, wandb_log_NAL
 from utils.densecrf import dense_crf
 from utils.evaluate import evaluate
-    
+
+
 def train(cfg, train_loader, model, checkpoint):    
     model = model.cuda()
     if cfg.MODEL.LOSS == "NAL":
@@ -146,6 +145,7 @@ def train(cfg, train_loader, model, checkpoint):
                     "Mean Accuracy": accuracy
                     })
 
+
 def val(cfg, data_loader, model, checkpoint):
     model = model.cuda()
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -231,6 +231,7 @@ def main(cfg):
         train(cfg, data_loader, model, checkpoint)
     elif cfg.DATA.MODE == "val":
         val(cfg, data_loader, model, checkpoint)
+
 
 def get_args():
     parser = argparse.ArgumentParser()
