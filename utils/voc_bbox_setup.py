@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 import numpy as np
 from PIL import Image
 import xml.etree.cElementTree as et

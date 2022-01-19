@@ -13,6 +13,7 @@ class NoiseAwareLoss(nn.Module):
         self.lambda_wgt = lambda_wgt
         self.soft_max = nn.Softmax(dim=1)
         self.cosine_similarity = torch.nn.CosineSimilarity(dim=1, eps=1e-6)
+        self.n_classes_arr=torch.arange(self.num_classes).cuda()
 
     def forward(self, y_pred, ycrf, yret, feature_map, classifier_weight):
         y_pred = self.soft_max(y_pred)
@@ -22,9 +23,8 @@ class NoiseAwareLoss(nn.Module):
         return loss_nal
         
     def get_loss_ce(self, y_pred, ycrf, yret):
-        n_classes_arr=torch.arange(self.num_classes).cuda()
         
-        s_class = (ycrf[:,:,:,None] == n_classes_arr) & (yret[:,:,:,None] == n_classes_arr)
+        s_class = (ycrf[:,:,:,None] == self.n_classes_arr) & (yret[:,:,:,None] == self.n_classes_arr)
         s_class = torch.permute(s_class, (0, 3, 1, 2)) 
         
         denom = torch.sum(s_class)
@@ -32,7 +32,6 @@ class NoiseAwareLoss(nn.Module):
         return -num/denom 
 
     def get_loss_wce(self, ypred, ycrf, yret, feature_map, classifier_weight):
-        n_classes_arr = torch.from_numpy(np.arange(self.num_classes)).cuda()
         
         correlation_map = torch.zeros((feature_map.shape[0], self.num_classes, 41, 41)).cuda() 
         correlation_map_cstar = torch.zeros((feature_map.shape[0], 321, 321)).cuda()
@@ -42,7 +41,7 @@ class NoiseAwareLoss(nn.Module):
             
         correlation_map = F.interpolate(correlation_map, (321,321), mode='bilinear', align_corners=False)
 
-        idx = (ycrf[:,:,:,None] == n_classes_arr)    
+        idx = (ycrf[:,:,:,None] == self.n_classes_arr)    
         idx = torch.permute(idx, (0, 3, 1, 2))  
         for i in range(self.num_classes):
             t = idx[:,i,:,:]
@@ -51,7 +50,7 @@ class NoiseAwareLoss(nn.Module):
 
         denom=0
         numer=0
-        not_s_class = torch.logical_not((ycrf[:,:,:,None] == n_classes_arr) & (yret[:,:,:,None] == n_classes_arr))  
+        not_s_class = torch.logical_not((ycrf[:,:,:,None] == self.n_classes_arr) & (yret[:,:,:,None] == self.n_classes_arr))  
         not_s_class = torch.permute(not_s_class, (0, 3, 1, 2)) 
 
         for i in range(self.num_classes):

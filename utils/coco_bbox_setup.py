@@ -6,7 +6,6 @@ try:
     import imagesize
 except ModuleNotFoundError:
     pass
-import time
 
 root_dir = os.getcwd()
 directory = os.path.join(root_dir,"train2017")  # need to update this 
