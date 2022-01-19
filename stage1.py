@@ -1,7 +1,5 @@
 import os
-import sys
 import random
-import logging
 import argparse
 import numpy as np
 import torch
@@ -16,7 +14,6 @@ from models.ClsNet import Labeler
 
 import wandb
 from utils.wandb import init_wandb, wandb_log
-
 
 
 def my_collate(batch):
@@ -42,13 +39,6 @@ def my_collate(batch):
 
 
 def main(cfg):
-    formatter = logging.Formatter("[%(asctime)s] %(levelname)s: %(message)s", datefmt="%m/%d %H:%M:%S")
-    ch = logging.StreamHandler(stream=sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    ch.setFormatter(formatter)
-    fh = logging.FileHandler(f"./logs/{cfg.NAME}.txt")
-    fh.setLevel(logging.DEBUG)
-    fh.setFormatter(formatter)
     
     if cfg.SEED:
         np.random.seed(cfg.SEED)
@@ -91,28 +81,34 @@ def main(cfg):
     interval_verbose = cfg.SOLVER.MAX_ITER // 40
 
     for it in range(1, cfg.SOLVER.MAX_ITER+1):
+
         try:
             sample = next(iterator)
         except:
             iterator = iter(train_loader)
             sample = next(iterator)
+
         img = sample["img"]
         bboxes = sample["bboxes"]
         bg_mask = sample["bg_mask"]
         batchID_of_box = sample["batchID_of_box"]
         ind_valid_bg_mask = bg_mask.mean(dim=(1,2,3)) > 0.125 # This is because VGG16 has output stride of 8.
-        logits = model(img.cuda(), bboxes, batchID_of_box, bg_mask.cuda(), ind_valid_bg_mask,GAP=cfg.MODEL.GAP)
+
+        logits = model(img.cuda(), bboxes, batchID_of_box, bg_mask.cuda(), ind_valid_bg_mask, GAP=cfg.MODEL.GAP)
         logits = logits[...,0,0]
         fg_t = bboxes[:,-1][:,None].expand(bboxes.shape[0], np.prod(cfg.MODEL.ROI_SIZE))
         fg_t = fg_t.flatten().long()
         target = torch.zeros(logits.shape[0], dtype=torch.long)
         target[:fg_t.shape[0]] = fg_t
+
         loss = criterion(logits, target.cuda())
+
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         scheduler.step()
         storages["CE"] += loss.item()
+
         if it % interval_verbose == 0:
             for k in storages.keys(): storages[k] /= interval_verbose
             for k in storages.keys(): storages[k] = 0
