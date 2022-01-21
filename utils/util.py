@@ -55,8 +55,33 @@ def checkpoint_callback_stage1(cfg):
     Custom callback for saving checkpoint
     Args:
          cfg: namespace of config file variables
-         n_epoch: number of epochs between checkpoints. If equal to zero, saving after epochs disabled.
-         n_step: number of training steps between checkpoints. If equal to zero, saving after training steps disabled.
+    Returns:
+         checkpoint_callback
+    '''
+    if not cfg.MODEL.SAVING:   # Disable saving
+        return None
+    n_epoch = cfg.MODEL.SAVE_AFTER_N_EPOCHS
+    n_step = cfg.MODEL.SAVE_AFTER_N_STEPS
+    if n_epoch==0 and n_step==0:
+        return None 
+    return ModelCheckpoint(
+        dirpath=f"{cfg.MODEL.SAVE_DIR}",              # directory path to save checkpoints
+        filename='{epoch}-{step}-{train_loss:.2f}',   
+        save_last=True,                               # save last checkpoint
+        save_top_k =1,                                # save the best checkpoint
+        monitor='train/loss',                         # check train loss
+        mode='min',                     # criteria for best checkpoint is minimum train loss
+        every_n_epochs=n_epoch,              # if n_epoch is not None after epochs=n_epoch checkpoint saved.
+        save_on_train_epoch_end=True if n_epoch is not None else False,   
+        #  if True checkpoint saved after train_epoch_end
+        every_n_train_steps=n_step      # if n_step is not None after steps=n_step checkpoint saved.  
+        ) 
+
+def checkpoint_callback_stage3(cfg):
+    '''
+    Custom callback for saving checkpoint
+    Args:
+         cfg: namespace of config file variables
     Returns:
          checkpoint_callback
     '''

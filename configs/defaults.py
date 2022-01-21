@@ -32,6 +32,7 @@ _C.MODEL.SAVE_AFTER_N_STEPS= 0      # For stage 1
 _C.MODEL.SAVE_DIR=""        # For stage 1
 _C.MODEL.USE_BEST=False     # For stage 1
 _C.MODEL.LOSS = ""          # For stage 3
+_C.MODEL.EVAL_INTERVAL= 0   # For stage 3
 
 _C.SOLVER = CN()
 _C.SOLVER.LR = 0.           # For stage 1

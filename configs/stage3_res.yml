@@ -39,6 +39,7 @@ MODEL:
   SAVE_DIR: "/content/drive/MyDrive/Saved_models/"
   SAVE_AFTER_N_EPOCHS: 0  # Number of epochs after which model is to be saved.When set equal to 0 saving after epochs disabled.
   SAVE_AFTER_N_STEPS : 0  # Number of steps after which model is to be saved.When set equal to 0 saving after steps disabled.
+  EVAL_INTERVAL : 0       # Number of epochs after which model is to be evaluated on train dataset
 
 SOLVER:
   LR: 2.5e-4   # Learning rate

@@ -3,7 +3,7 @@ import os
 import sys
 from utils.util import seed,process_cfg,checkpoint_callback_stage1
 from extension.stage1.Lightningextension import VOCDataModule,LabelerLitModel
-from utils.logging import get_logger
+from utils.logging import get_logger,log_lr
 try:
     import wandb
 except ModuleNotFoundError:
@@ -29,6 +29,8 @@ def stage1(args):
     model=LabelerLitModel(cfg)
 
     checkpoint_callback=checkpoint_callback_stage1(cfg)
+    lr_monitor = log_lr()
+
     resume=None
     if args.resume is not "None":
         resume=f"{cfg.MODEL.SAVE_DIR}/{args.resume}"
@@ -48,7 +50,7 @@ def stage1(args):
     max_epochs=cfg.SOLVER.MAX_EPOCH,
     enable_checkpointing=cfg.MODEL.SAVING, 
     # if cfg.MODEL.SAVING=True checkpointing will be enabled, else disabled
-    callbacks=checkpoint_callback,
+    callbacks=[checkpoint_callback,lr_monitor],
     # log data every training step
     log_every_n_steps=1,
     gpus=[int(args.gpu_id)],

@@ -4,6 +4,9 @@ try:
 except ModuleNotFoundError:
     pass
 
+from pytorch_lightning.callbacks import LearningRateMonitor
+
+
 def wandblogging(cfg,model):
     '''
     logs data to wandb.
@@ -45,3 +48,10 @@ def get_logger(cfg,model=None):
             return wandblogging(cfg,model)
         # Default logger is TensorBoardLogger
         return cfg.LOGGER.LOGGING
+
+def log_lr():
+    return LearningRateMonitor(logging_interval=None, log_momentum=True)
+
+def log_eval(key,value):
+    if cfg.LOGGER.LOGGING and cfg.LOGGER.TYPE.lower()=='wandb':
+        wandb.run.summary[key] = value 
