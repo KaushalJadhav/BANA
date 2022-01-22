@@ -126,28 +126,42 @@ We achieve the following results:
 
 - Comparison of mIoU scores using different losses on the PASCAL VOC 2012 training set. We provide both mIoU scores before/after applying DenseCRF
 
+| **Method**                    | **Original Author's Results** | **Our Results** |
+|:-----------------------------:|:-----------------------------:|:---------------:|
+| **Baseline**                  | 61.8 / 67.5                   |                 |
+| **w/ Entropy Regularization** | 61.4 / 67.3                   |                 |
+| **w/ Bootstrapping**          | 61.9 / 67.6                   |                 |
+| **w/ Lwce**                   | 62.4 / 68.1                   |                 |
+
 - Quantitative comparison using DeepLab-V1 (VGG-16) on the PASCAL VOC 2012 dataset in terms of mIoU
     - Weakly supervised learning
 
-| **Method**          | **Original Author's Results** | **Our Results** |
-|:-------------------:|:-----------------------------:|:---------------:|
-| **w/ Ycrf**         | 67.8                          | 64.7            |
-| **w/ Yret**         | 66.1                          | 58.7            |
-| **w/ NAL**          | 68.1                          | 64.5            |
-
+    | **Method**          | **Original Author's Results** | **Our Results** |
+    |:-------------------:|:-----------------------------:|:---------------:|
+    | **w/ Ycrf**         | 67.8                          | 64.7            |
+    | **w/ Yret**         | 66.1                          | 58.7            |
+    | **w/ NAL**          | 68.1                          | 64.5            |
 
     - Semi-supervised learning
+
+    | **Method**          | **Original Author's Results** | **Our Results** |
+    |:-------------------:|:-----------------------------:|:---------------:|
+    | **w/ NAL**          | 70.5                          |                 |
 
 - Quantitative comparison using DeepLab-V2 (ResNet-101) on the PASCAL VOC 2012 dataset in terms of mIoU
     - Weakly supervised learning
 
-| **Method**          | **Original Author's Results** | **Our Results** |
-|:-------------------:|:-----------------------------:|:---------------:|
-| **w/ Ycrf**         | 74.0                          | 67.0            |
-| **w/ Yret**         | 72.4                          | 70.2            |
-| **w/ NAL**          | 74.6                          |                 |
+    | **Method**          | **Original Author's Results** | **Our Results** |
+    |:-------------------:|:-----------------------------:|:---------------:|
+    | **w/ Ycrf**         | 74.0                          | 67.0            |
+    | **w/ Yret**         | 72.4                          | 70.2            |
+    | **w/ NAL**          | 74.6                          |                 |
 
     - Semi-supervised learning
+
+    | **Method**          | **Original Author's Results** | **Our Results** |
+    |:-------------------:|:-----------------------------:|:---------------:|
+    | **w/ NAL**          | 78.7                          |                 |
 
 - Quantitative comparison for instance segmentation on the MS-COCO test set
 
