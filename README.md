@@ -47,37 +47,64 @@ Once finished, the folder `data` should be like this:
 
 ## Training
 
-The training procedure is divided into 3 stages and example commands for each have been given below. Hyperparameters can be adjusted accordingly in the correponding configuration files.
+The training procedure is divided into 3 stages and example commands for each have been given below. Hyperparameters can be adjusted accordingly in the corresponding configuration files.
 
-1. **Stage 1:** Training the classification network
+### **Stage 1:** Training the classification network
+
+Change the `MODEL.GAP` parameter in config file to train the model: 
+
+1. `True`: With the Global Average Pooling method 
+2. `False`: With the proposed Background Aware Pooling method
+
+By default, all the models are trained using Augmented PASCAL VOC containing 10,582 images and can be trained using Non-Augmented dataset by changing the `DATA.AUG` parameter to `False`. 
 
 ```bash
 python3 stage1.py --config-file configs/stage1.yml --gpu-id 0
 ```
 
-2. **Stage 2:** Generating pseudo labels
+### **Stage 2:** Generating pseudo labels
 
 ```bash
 python3 stage2.py --config-file configs/stage2.yml --gpu-id 0
 ```
 
-3. **Stage 3:** Training a CNN using the pseudo labels
+### **Stage 3:** Training a CNN using the pseudo labels
+
+DeepLab Large FOV (VGG Backbone):
 
 ```bash
 python3 stage3.py --config-file configs/stage3_vgg.yml --gpu-id 0
 ```
 
-## Evaluation
-
-To evaluate the model on the validation set of Pascal VOC 2012 dataset:
+DeepLab ASPP (Resnet Backbone): 
 
 ```bash
-python3 
+python3 stage3.py --config-file configs/stage3_res.yml --gpu-id 0
 ```
 
+Change the `MODEL.LOSS` parameter in the corresponding config file to train the model: 
+
+1. `NAL` : With the proposed Noise Aware Loss using Ycrf and Yret
+2. `CE_CRF`: With the Cross Entropy Loss using Ycrf
+3. `CE_RET`: With the Cross Entropy Loss using Yret
+## Evaluation
+
+To evaluate the model on the validation set of Pascal VOC 2012 dataset before and after Dense CRF processing change the `DATA.MODE` parameter to `val` in the corresponding config file:
+
+```bash
+python3 stage3.py --config-file configs/stage3_vgg.yml --gpu-id 0
+```
+
+DeepLab ASPP (Resnet Backbone): 
+
+```bash
+python3 stage3.py --config-file configs/stage3_res.yml --gpu-id 0
+```
+
+Evaluation would be performed on raw validation set images to obtain the Mean Accuracy and IOU metrics pre and post-Dense CRF processing.
 ## Pre-trained Models and Pseudo Labels
 
-- Pretrained models:
+- Pretrained models: [Link](https://drive.google.com/drive/folders/14F1vU7Gp-nIZVhPe2XzrbnyUYTmnt2Sz?usp=sharing)
 
 - Pseudo Labels: [Link](https://drive.google.com/drive/folders/1wC9qr1lE_JN0Htrf0SfPhKz4AdqQ0zbt?usp=sharing)
 
@@ -101,10 +128,25 @@ We achieve the following results:
 
 - Quantitative comparison using DeepLab-V1 (VGG-16) on the PASCAL VOC 2012 dataset in terms of mIoU
     - Weakly supervised learning
+
+| **Method**          | **Original Author's Results** | **Our Results** |
+|:-------------------:|:-----------------------------:|:---------------:|
+| **w/ Ycrf**         | 67.8                          | 64.7            |
+| **w/ Yret**         | 66.1                          | 58.7            |
+| **w/ NAL**          | 68.1                          | 64.5            |
+
+
     - Semi-supervised learning
 
 - Quantitative comparison using DeepLab-V2 (ResNet-101) on the PASCAL VOC 2012 dataset in terms of mIoU
     - Weakly supervised learning
+
+| **Method**          | **Original Author's Results** | **Our Results** |
+|:-------------------:|:-----------------------------:|:---------------:|
+| **w/ Ycrf**         | 74.0                          | 67.0            |
+| **w/ Yret**         | 72.4                          | 70.2            |
+| **w/ NAL**          | 74.6                          |                 |
+
     - Semi-supervised learning
 
 - Quantitative comparison for instance segmentation on the MS-COCO test set
@@ -112,6 +154,8 @@ We achieve the following results:
 ## Qualitative Results
 
 ## Contributors
+
+[Aryan Mehta](https://github.com/victorvini08), [Karan Uppal](https://github.com/karan-uppal3), [Kaushal Jadhav](https://github.com/KaushalJadhav), [Monish Natrajan](https://github.com/Monish-Natarajan) and [Mradul Agrawal](https://github.com/mradul2)
 
 This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.ac.in/)
 
@@ -125,13 +169,12 @@ This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.
 }
 ```
 
+## Acknowledgments
+
+- PASCAL VOC 2012 Setup adopted from [deeplab-pytorch](https://github.com/kazuto1011/deeplab-pytorch/blob/master/data/datasets/voc12/README.md)
+
 ## To-do
 
 - Add the code flow link
-- Add comments and docstring to data/setup_dataset.py
-- Add more information regarding training (basically explain the different options: aug, naug, bap, gap, ycrf, yret, vgg, resnet, etc.)
-- Write evaluation command
-- Add links to download pre-trained models and pseudo labels (all)
 - Complete the tables
 - Add examples of pseudo labels generated and predictions in qualitative comparison
-- Add contributors

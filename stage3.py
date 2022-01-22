@@ -189,12 +189,21 @@ def main(cfg):
         return
 
     dataset = VOC_seg(cfg, tr_transforms)
-    data_loader = DataLoader(dataset, 
-                             batch_size=cfg.DATA.BATCH_SIZE, 
-                             shuffle=True, 
-                             num_workers=4, 
-                             pin_memory=True, 
-                             drop_last=True)
+    if cfg.DATA.MODE == "train_weak":
+        data_loader = DataLoader(dataset, 
+                                 batch_size=cfg.DATA.BATCH_SIZE, 
+                                 shuffle=True, 
+                                 num_workers=4, 
+                                 pin_memory=True, 
+                                 drop_last=True)
+        
+    elif cfg.DATA.MODE == "val":
+        data_loader = DataLoader(dataset,
+                                 batch_size=1,
+                                 shuffle=False,
+                                 num_workers=4, 
+                                 pin_memory=True, 
+                                 drop_last=True)
     
     if cfg.NAME == "SegNet_VGG":
         model = DeepLab_LargeFOV(cfg.DATA.NUM_CLASSES, is_CS=True)
