@@ -167,6 +167,15 @@ We achieve the following results:
 
 ## Qualitative Results
 
+### Pseudo Labels
+
+Ground Truth                |  Y Crf                       |  Y Ret        
+:--------------------------:|:----------------------------:| :--------------------------:
+![](assets/stage2/gt/1.png) | ![](assets/stage2/crf/1.png) | ![](assets/stage2/ret/1.png)
+![](assets/stage2/gt/2.png) | ![](assets/stage2/crf/2.png) | ![](assets/stage2/ret/2.png)
+![](assets/stage2/gt/3.png) | ![](assets/stage2/crf/3.png) | ![](assets/stage2/ret/3.png)
+![](assets/stage2/gt/4.png) | ![](assets/stage2/crf/4.png) | ![](assets/stage2/ret/4.png)
+
 ## Contributors
 
 [Aryan Mehta](https://github.com/victorvini08), [Karan Uppal](https://github.com/karan-uppal3), [Kaushal Jadhav](https://github.com/KaushalJadhav), [Monish Natrajan](https://github.com/Monish-Natarajan) and [Mradul Agrawal](https://github.com/mradul2)
