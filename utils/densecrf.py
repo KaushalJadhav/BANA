@@ -34,6 +34,19 @@ class DENSE_CRF(object):
         return out
     
 def dense_crf(cfg, data_loader, model):
+    """
+    Dense CRF evaluation function
+
+    Apply the Dense CRF post processing to the model output and calculate the metrics.
+
+    Inputs:
+    - cfg: config file
+    - data_loader: dataloader
+    - model: model
+
+    Outputs:
+    - Mean Accuracy and IoU
+    """
     with torch.no_grad():
         model.eval()
         label_trues = []

@@ -155,7 +155,7 @@ We achieve the following results:
     |:-------------------:|:-----------------------------:|:---------------:|
     | **w/ Ycrf**         | 74.0                          | 67.0            |
     | **w/ Yret**         | 72.4                          | 70.2            |
-    | **w/ NAL**          | 74.6                          |                 |
+    | **w/ NAL**          | 74.6                          | 70.8            |
 
     - Semi-supervised learning
 
@@ -169,12 +169,14 @@ We achieve the following results:
 
 ### Pseudo Labels
 
-Ground Truth                |  Y Crf                       |  Y Ret        
+Ground Truth                |  Y CRF                       |  Y RET        
 :--------------------------:|:----------------------------:| :--------------------------:
 ![](assets/stage2/gt/1.png) | ![](assets/stage2/crf/1.png) | ![](assets/stage2/ret/1.png)
 ![](assets/stage2/gt/2.png) | ![](assets/stage2/crf/2.png) | ![](assets/stage2/ret/2.png)
 ![](assets/stage2/gt/3.png) | ![](assets/stage2/crf/3.png) | ![](assets/stage2/ret/3.png)
 ![](assets/stage2/gt/4.png) | ![](assets/stage2/crf/4.png) | ![](assets/stage2/ret/4.png)
+
+### Predictions
 
 ## Contributors
 

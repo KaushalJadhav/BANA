@@ -39,7 +39,17 @@ def my_collate(batch):
 
 
 def main(cfg):
-    
+    """
+    Main function
+
+    Create dataloaders, train the model, and save the trained model.
+
+    Inputs:
+    - cfg: config file
+
+    Outputs:
+    - Trained model saved locally and on wandb
+    """
     if cfg.SEED:
         np.random.seed(cfg.SEED)
         torch.manual_seed(cfg.SEED)

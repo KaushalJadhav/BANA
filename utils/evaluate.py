@@ -5,6 +5,19 @@ import numpy as np
 from tqdm import tqdm
 
 def evaluate(cfg, data_loader, model):
+    """
+    Evaluation function
+
+    Evaluate the model using the given dataloader.
+
+    Inputs:
+    - cfg: config file
+    - data_loader: dataloader
+    - model: model
+
+    Outputs:
+    - Mean Accuracy and IoU
+    """
     with torch.no_grad():
         model.eval()
         evaluator = Evaluator(cfg.DATA.NUM_CLASSES)

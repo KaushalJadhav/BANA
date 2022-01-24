@@ -23,7 +23,21 @@ from utils.densecrf import dense_crf
 from utils.evaluate import evaluate
 
 
-def train(cfg, train_loader, model, checkpoint):    
+def train(cfg, train_loader, model, checkpoint):
+    """
+    Training function
+    
+    Train the model using the training dataloader and the last saved checkpoint.
+
+    Inputs:
+    - cfg: config file
+    - train_loader: training dataloader
+    - model: model
+    - checkpoint: state dict of the model, optimizer, scheduler, etc.
+
+    Outputs:
+    - Trained model saved locally and on wandb
+    """    
     model = model.cuda()
     if cfg.MODEL.LOSS == "NAL":
         criterion = NoiseAwareLoss(cfg.DATA.NUM_CLASSES, 
@@ -147,6 +161,21 @@ def train(cfg, train_loader, model, checkpoint):
 
 
 def val(cfg, data_loader, model, checkpoint):
+    """
+    Validation function
+
+    Evaluate the model using the validation dataloader and the last saved checkpoint.
+    And apply the CRF post-processing to the predicted masks.
+
+    Inputs:
+    - cfg: config file
+    - data_loader: validation dataloader
+    - model: model
+    - checkpoint: state dict of the model, optimizer, scheduler, etc.
+
+    Outputs:
+    - Validation metrics saved locally and on wandb
+    """
     model = model.cuda()
     model.load_state_dict(checkpoint['model_state_dict'])
     accuracy, iou = evaluate(cfg, data_loader, model)
@@ -163,6 +192,17 @@ def val(cfg, data_loader, model, checkpoint):
 
    
 def main(cfg):
+    """
+    Main function
+
+    Call the train and val functions according to the mode.
+
+    Inputs:
+    - cfg: config file
+
+    Outputs:
+
+    """
     if cfg.SEED:
         np.random.seed(cfg.SEED)
         torch.manual_seed(cfg.SEED)
@@ -243,6 +283,9 @@ def main(cfg):
 
 
 def get_args():
+    """
+    Get the arguments from the command line.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--config-file")
     parser.add_argument("--gpu-id", type=str, default="0", help="select a GPU index")
