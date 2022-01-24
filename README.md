@@ -87,6 +87,19 @@ Change the `MODEL.LOSS` parameter in the corresponding config file to train the 
 1. `NAL` : With the proposed Noise Aware Loss using Ycrf and Yret
 2. `CE_CRF`: With the Cross Entropy Loss using Ycrf
 3. `CE_RET`: With the Cross Entropy Loss using Yret
+
+### VOC to COCO psuedo label Generation
+Change the `DATA.ROOT` and `MODEL.NUM_CLASSES` in the Stage2 config file for psuedolabel generation on MS COCO 2017 train dataset 
+
+```bash
+python3 stage2_voc_to_coco.py --config-file configs/stage2.yml --gpu-id 0
+```
+
+Obtaining mean Average Precision (mAP) of the generated psuedolabels
+```bash
+TBD
+```
+
 ## Evaluation
 
 To evaluate the model on the validation set of Pascal VOC 2012 dataset before and after Dense CRF processing change the `DATA.MODE` parameter to `val` in the corresponding config file:
@@ -162,8 +175,15 @@ We achieve the following results:
     | **Method**          | **Original Author's Results** | **Our Results** |
     |:-------------------:|:-----------------------------:|:---------------:|
     | **w/ NAL**          | 78.7                          |                 |
-
-- Quantitative comparison for instance segmentation on the MS-COCO test set
+    
+- Quantitative comparison of psuedo lables on the MS-COCO train set for model trained on Pascal VOC
+    
+    | **Results on COCO train**    | **AP**   | **AP50** | **AP75** | **APs** | **APm**  | **APl**  |
+    |:----------------------------:|:---------|:--------:|:--------:|:-------:|:--------:|:--------:|
+    | **BAP: Ycrf** (Authors)      | 11.7     | 28.7     | 8.0      | 3.0     | 15.0     | 27.1     |
+    | **BAP: Ycrf** (Ours)         | 8.6      | 20.1     | 6.5      | 1.9     |  8.8     | 15.9     |
+    | **BAP: Yret** (Authors)      | 9.0      | 30.1     | 2.8      | 4.4     | 10.2     | 16.2     |
+    | **BAP: Yret** (Ours)         | 6.6      | 20.2     | 2.5      | 3.3     | 5.7      | 10.6     |
 
 ## Qualitative Results
 
@@ -180,7 +200,7 @@ Ground Truth                |  Y CRF                       |  Y RET
 
 ## Contributors
 
-[Aryan Mehta](https://github.com/victorvini08), [Karan Uppal](https://github.com/karan-uppal3), [Kaushal Jadhav](https://github.com/KaushalJadhav), [Monish Natrajan](https://github.com/Monish-Natarajan) and [Mradul Agrawal](https://github.com/mradul2)
+[Aryan Mehta](https://github.com/victorvini08), [Karan Uppal](https://github.com/karan-uppal3), [Kaushal Jadhav](https://github.com/KaushalJadhav), [Monish Natarajan](https://github.com/Monish-Natarajan) and [Mradul Agrawal](https://github.com/mradul2)
 
 This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.ac.in/)
 
@@ -203,3 +223,5 @@ This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.
 - Add the code flow link
 - Complete the tables
 - Add examples of pseudo labels generated and predictions in qualitative comparison
+- Add code for Evaluation of Stage2 VOC to COCO
+- Instructions for BgMask Generation
