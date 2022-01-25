@@ -235,6 +235,6 @@ This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.
 
 - Add the code flow link
 - Complete the tables
-- Add examples of pseudo labels generated and predictions in qualitative comparison
+- Bash command for calculating mAP 
 - Add code for Evaluation of Stage2 VOC to COCO
-- Instructions for BgMask Generation
+
