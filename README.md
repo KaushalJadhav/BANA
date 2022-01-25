@@ -19,18 +19,27 @@ pip install -r requirements.txt
 ```
 
 To setup the dataset:
-
+<br>VOC:
 ```bash
 bash data/setup_voc.bash /path-to-data-directory
 ```
-
+<br>COCO:
+```bash
+TBD
+```
 To generate background masks:
+<br>VOC:
 ```bash
 cd /path-to-data-directory
 python3 voc_bbox_setup.py
 ```
+<br>COCO:
+```bash
+cd /path-to-data-directory
+python3 coco_bbox_setup.py
+```
 Once finished, the folder `data` should be like this:
-
+<br>VOC:
 ```
     data   
     └── VOCdevkit
@@ -43,6 +52,10 @@ Once finished, the folder `data` should be like this:
             └── Generation
                 ├── Y_crf
                 └── Y_ret
+```
+<br>COCO:
+```
+TO DO
 ```
 
 ## Training
