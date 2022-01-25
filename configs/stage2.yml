@@ -6,6 +6,7 @@ SEED: 0
 DATA: 
   ROOT: "/kaggle/working/data/VOCdevkit/VOC2012"  #root directory corresponding to Pascal VOC or MS COCO 
   NUM_CLASSES: 21                                 # 21 for VOC to VOC, 81 for VOC to COCO
+  MODE : "train"
   AUG: False
   
 MODEL:
