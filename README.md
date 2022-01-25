@@ -141,7 +141,7 @@ We achieve the following results:
 
 | **Method**                    | **Original Author's Results** | **Our Results** |
 |:-----------------------------:|:-----------------------------:|:---------------:|
-| **Baseline**                  | 61.8 / 67.5                   |                 |
+| **Baseline**                  | 61.8 / 67.5                   | 60.9 / 64.5     |
 | **w/ Entropy Regularization** | 61.4 / 67.3                   |                 |
 | **w/ Bootstrapping**          | 61.9 / 67.6                   |                 |
 | **w/ Lwce**                   | 62.4 / 68.1                   |                 |
