@@ -165,7 +165,7 @@ We achieve the following results:
     | **Method**          | **Original Author's Results** | **Our Results** |
     |:-------------------:|:-----------------------------:|:---------------:|
     | **w/ Ycrf**         | 67.8                          | 64.7            |
-    | **w/ Yret**         | 66.1                          | 58.7            |
+    | **w/ Yret**         | 66.1                          | 62.8            |
     | **w/ NAL**          | 68.1                          | 64.8            |
 
     - Semi-supervised learning
