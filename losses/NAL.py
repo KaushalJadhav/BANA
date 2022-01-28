@@ -37,7 +37,7 @@ class NoiseAwareLoss(nn.Module):
         correlation_map_cstar = torch.zeros((feature_map.shape[0], 321, 321)).cuda()
 
         for i in range(self.num_classes):
-            correlation_map[:,i,...] = 1 + self.cosine_similarity(feature_map[:,...], classifier_weight[i])
+            correlation_map[:,i,...] = 1 + self.cosine_similarity(feature_map[:,...], classifier_weight[i].unsqueeze(0))
             
         correlation_map = F.interpolate(correlation_map, (321,321), mode='bilinear', align_corners=False)
 
