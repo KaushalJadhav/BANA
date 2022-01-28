@@ -13,8 +13,12 @@ from tqdm import tqdm
 import data.transforms_seg as Trs
 from configs.defaults import _C
 from data.voc import VOC_seg
-from losses import (BaselineLoss, BootstrapingLoss, EntropyRegularizationLoss,
-                    NoiseAwareLoss)
+
+from losses.Baseline import BaselineLoss
+from losses.Bootstraping import BootstrapingLoss
+from losses.EntropyReg import EntropyRegularizationLoss
+from losses.NAL import NoiseAwareLoss
+
 from models.PolyScheduler import PolynomialLR
 from models.SegNet import DeepLab_ASPP, DeepLab_LargeFOV
 from utils.densecrf import dense_crf
@@ -139,7 +143,7 @@ def train(cfg, train_loader, model, checkpoint):
                              ycrf, 
                              yret,
                              beta)
-            beta = beta * (1 - float(it) / 23805) ** 0.9
+            beta = beta * ((1 - float(it) / 23805) ** 0.9)
         
         elif cfg.MODEL.LOSS == "ER" or cfg.MODEL.LOSS == "BASELINE":
             ycrf = ycrf.cuda().long()
