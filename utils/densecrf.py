@@ -60,7 +60,7 @@ def dense_crf(cfg, data_loader, model):
             # Forward pass
             img = img.cuda()
             img_size = img.size()
-            logit = model(img, (img_size[2], img_size[3]))
+            logit, feature_map = model(img, (img_size[2], img_size[3]))
             prob = F.softmax(logit, dim=1)[0].cpu().detach().numpy()
             img = img[0].cpu().detach().numpy().astype(np.uint8).transpose(1, 2, 0)
             ygt = ygt[0].cpu().detach().numpy()

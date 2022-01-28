@@ -53,6 +53,7 @@ def main(cfg):
     ann_path =  os.path.join(cfg.DATA.ROOT,'annotations/instances_train2017.json')
     data_root = os.path.join(cfg.DATA.ROOT,'train2017')
     
+    tr_transforms = Tr.Normalize_Caffe()
     trainset = COCO_box(data_root,ann_path, tr_transforms)
     train_loader = DataLoader(trainset, batch_size=1)
     

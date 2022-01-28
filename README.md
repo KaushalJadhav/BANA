@@ -19,18 +19,27 @@ pip install -r requirements.txt
 ```
 
 To setup the dataset:
-
+<br>VOC:
 ```bash
 bash data/setup_voc.bash /path-to-data-directory
 ```
-
+<br>COCO:
+```bash
+TBD
+```
 To generate background masks:
+<br>VOC:
 ```bash
 cd /path-to-data-directory
 python3 voc_bbox_setup.py
 ```
+<br>COCO:
+```bash
+cd /path-to-data-directory
+python3 coco_bbox_setup.py
+```
 Once finished, the folder `data` should be like this:
-
+<br>VOC:
 ```
     data   
     └── VOCdevkit
@@ -43,6 +52,10 @@ Once finished, the folder `data` should be like this:
             └── Generation
                 ├── Y_crf
                 └── Y_ret
+```
+<br>COCO:
+```
+TO DO
 ```
 
 ## Training
@@ -152,7 +165,7 @@ We achieve the following results:
     | **Method**          | **Original Author's Results** | **Our Results** |
     |:-------------------:|:-----------------------------:|:---------------:|
     | **w/ Ycrf**         | 67.8                          | 64.7            |
-    | **w/ Yret**         | 66.1                          | 58.7            |
+    | **w/ Yret**         | 66.1                          | 62.8            |
     | **w/ NAL**          | 68.1                          | 64.8            |
 
     - Semi-supervised learning
@@ -222,6 +235,6 @@ This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.
 
 - Add the code flow link
 - Complete the tables
-- Add examples of pseudo labels generated and predictions in qualitative comparison
+- Bash command for calculating mAP 
 - Add code for Evaluation of Stage2 VOC to COCO
-- Instructions for BgMask Generation
+
