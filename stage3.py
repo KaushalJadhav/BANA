@@ -1,26 +1,25 @@
+import argparse
 import os
 import random
-import argparse
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import wandb
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import wandb
 
 import data.transforms_seg as Trs
-from data.voc import VOC_seg
-
-from models.SegNet import DeepLab_LargeFOV, DeepLab_ASPP
-from models.NAL import NoiseAwareLoss
-from models.PolyScheduler import PolynomialLR
-
 from configs.defaults import _C
-
-from utils.wandb import wandb_log_seg, init_wandb, wandb_log_NAL
+from data.voc import VOC_seg
+from losses import (BaselineLoss, BootstrapingLoss, EntropyRegularizationLoss,
+                    NoiseAwareLoss)
+from models.PolyScheduler import PolynomialLR
+from models.SegNet import DeepLab_ASPP, DeepLab_LargeFOV
 from utils.densecrf import dense_crf
 from utils.evaluate import evaluate
+from utils.wandb import init_wandb, wandb_log_seg
 
 
 def train(cfg, train_loader, model, checkpoint):
@@ -43,6 +42,18 @@ def train(cfg, train_loader, model, checkpoint):
         criterion = NoiseAwareLoss(cfg.DATA.NUM_CLASSES, 
                                    cfg.MODEL.DAMP, 
                                    cfg.MODEL.LAMBDA)
+    elif cfg.MODEL.LOSS == "ER":
+        criterion = EntropyRegularizationLoss(cfg.DATA.NUM_CLASSES,
+                                              cfg.MODEL.LAMBDA)
+        
+    elif cfg.MODEL.LOSS == "BS":
+        criterion = BootstrapingLoss(cfg.DATA.NUM_CLASSES,
+                                     cfg.MODEL.LAMBDA)
+        beta = 1.0
+        
+    elif cfg.MODEL.LOSS == "BASELINE":
+        criterion = BaselineLoss(cfg.DATA.NUM_CLASSES)
+    
     else:
         criterion = nn.CrossEntropyLoss(ignore_index=255)
         
@@ -121,11 +132,27 @@ def train(cfg, train_loader, model, checkpoint):
                              feature_map, 
                              classifier_weight)
             
+        elif cfg.MODEL.LOSS == "BS":
+            ycrf = ycrf.cuda().long()
+            yret = yret.cuda().long()
+            loss = criterion(logit, 
+                             ycrf, 
+                             yret,
+                             beta)
+            beta = beta * (1 - float(it) / 23805) ** 0.9
+        
+        elif cfg.MODEL.LOSS == "ER" or cfg.MODEL.LOSS == "BASELINE":
+            ycrf = ycrf.cuda().long()
+            yret = yret.cuda().long()
+            loss = criterion(logit, 
+                             ycrf, 
+                             yret)
+        
         elif cfg.MODEL.LOSS == "CE_CRF":
-            ycrf = ycrf.to('cuda').long()
+            ycrf = ycrf.cuda().long()
             loss = criterion(logit, ycrf)
         elif cfg.MODEL.LOSS == "CE_RET":
-            yret = yret.to('cuda').long()
+            yret = yret.cuda().long()
             loss = criterion(logit, yret)
 
         # Backward pass
