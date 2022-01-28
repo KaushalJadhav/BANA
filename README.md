@@ -202,12 +202,13 @@ We achieve the following results:
 
 ### Pseudo Labels
 
-Ground Truth                |  Y CRF                       |  Y RET        
-:--------------------------:|:----------------------------:| :--------------------------:
-![](assets/stage2/gt/1.png) | ![](assets/stage2/crf/1.png) | ![](assets/stage2/ret/1.png)
-![](assets/stage2/gt/2.png) | ![](assets/stage2/crf/2.png) | ![](assets/stage2/ret/2.png)
-![](assets/stage2/gt/3.png) | ![](assets/stage2/crf/3.png) | ![](assets/stage2/ret/3.png)
-![](assets/stage2/gt/4.png) | ![](assets/stage2/crf/4.png) | ![](assets/stage2/ret/4.png)
+| Input Image                  | Ground Truth                | Y CRF                        | Y RET                        |
+|------------------------------|-----------------------------|------------------------------|------------------------------|
+| ![](assets/stage2/img/1.jpg) | ![](assets/stage2/gt/1.png) | ![](assets/stage2/crf/1.png) | ![](assets/stage2/ret/1.png) |
+| ![](assets/stage2/img/2.jpg) | ![](assets/stage2/gt/2.png) | ![](assets/stage2/crf/2.png) | ![](assets/stage2/ret/2.png) |
+| ![](assets/stage2/img/3.jpg) | ![](assets/stage2/gt/3.png) | ![](assets/stage2/crf/3.png) | ![](assets/stage2/ret/3.png) |
+| ![](assets/stage2/img/4.jpg) | ![](assets/stage2/gt/4.png) | ![](assets/stage2/crf/4.png) | ![](assets/stage2/ret/4.png) |
+| ![](assets/stage2/img/5.jpg) | ![](assets/stage2/gt/5.png) | ![](assets/stage2/crf/5.png) | ![](assets/stage2/ret/5.png) |
 
 ### Predictions
 
