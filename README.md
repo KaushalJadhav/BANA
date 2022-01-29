@@ -156,7 +156,7 @@ We achieve the following results:
 |:-----------------------------:|:-----------------------------:|:---------------:|
 | **Baseline**                  | 61.8 / 67.5                   | 60.9 / 64.5     |
 | **w/ Entropy Regularization** | 61.4 / 67.3                   | 60.8 / 64.1     |
-| **w/ Bootstrapping**          | 61.9 / 67.6                   |                 |
+| **w/ Bootstrapping**          | 61.9 / 67.6                   | 60.9 / 64.6      |
 | **w/ Lwce**                   | 62.4 / 68.1                   | 61.4 / 64.8     |
 
 - Quantitative comparison using DeepLab-V1 (VGG-16) on the PASCAL VOC 2012 dataset in terms of mIoU
