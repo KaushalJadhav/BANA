@@ -98,8 +98,11 @@ python3 stage3.py --config-file configs/stage3_res.yml --gpu-id 0
 Change the `MODEL.LOSS` parameter in the corresponding config file to train the model: 
 
 1. `NAL` : With the proposed Noise Aware Loss using Ycrf and Yret
-2. `CE_CRF`: With the Cross Entropy Loss using Ycrf
-3. `CE_RET`: With the Cross Entropy Loss using Yret
+2. `ER` : With the Entropy Regularization Loss using Ycrf and Yret
+3. `BS` : With the Bootstraping Loss using Ycrf and Yret
+4. `BASELINE` : With the CE Loss using only the relaible region obtained by Ycrf and Yret
+5. `CE_CRF`: With the Cross Entropy Loss using Ycrf
+6. `CE_RET`: With the Cross Entropy Loss using Yret
 
 ### VOC to COCO psuedo label Generation
 Change the `DATA.ROOT` and `MODEL.NUM_CLASSES` in the Stage2 config file for psuedolabel generation on MS COCO 2017 train dataset 
@@ -238,4 +241,3 @@ This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.
 - Complete the tables
 - Bash command for calculating mAP 
 - Add code for Evaluation of Stage2 VOC to COCO
-
