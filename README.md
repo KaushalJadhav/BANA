@@ -117,7 +117,7 @@ python3 stage3.py --config-file configs/stage3_res.yml --gpu-id 0
 Evaluation would be performed on raw validation set images to obtain the Mean Accuracy and IOU metrics pre and post-Dense CRF processing.
 ## Pre-trained Models and Pseudo Labels
 
-- Pretrained models: [Link](https://drive.google.com/drive/folders/14F1vU7Gp-nIZVhPe2XzrbnyUYTmnt2Sz?usp=sharing)
+- Pretrained stage-1 model: [Link](https://drive.google.com/file/d/1oJSn25b1pgRujVjX0pR4D-fKf_l8332t/view?usp=sharing)
 
 - Pseudo Labels: [Link](https://drive.google.com/drive/folders/1wC9qr1lE_JN0Htrf0SfPhKz4AdqQ0zbt?usp=sharing)
 
