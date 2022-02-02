@@ -237,7 +237,5 @@ This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.
 
 ## To-do
 
-- Add the code flow link
-- Complete the tables
-- Bash command for calculating mAP 
+- Add the code flow link 
 - Add code for Evaluation of Stage2 VOC to COCO
