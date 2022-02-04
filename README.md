@@ -1,6 +1,6 @@
 # [RE] Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation
 
-This repository is the PyTorch and PyTorch Lightning implementation of the paper ["Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation"](https://arxiv.org/pdf/2104.00905.pdf). It is well documented version of the original repository with the code flow available [here](). The paper address the problem of weakly-supervised semantic segmentation (WSSS) using bounding box annotations by proposing two novel methods:
+This repository is the PyTorch and PyTorch Lightning implementation of the paper ["Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation"](https://arxiv.org/pdf/2104.00905.pdf). It is well documented version of the original repository with the code flow available [here](assets/codeflow.pdf). The paper address the problem of weakly-supervised semantic segmentation (WSSS) using bounding box annotations by proposing two novel methods:
 - **Background-aware pooling (BAP)**, to extract high-quality pseudo segmentation labels
 - **Noise-aware Loss (NAL)**, to make the networks less susceptible to incorrect labels
 
