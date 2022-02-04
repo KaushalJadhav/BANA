@@ -23,10 +23,7 @@ To setup the dataset:
 ```bash
 bash data/setup_voc.bash /path-to-data-directory
 ```
-<br>COCO:
-```bash
-TBD
-```
+
 To generate background masks:
 <br>VOC:
 ```bash
