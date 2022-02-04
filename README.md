@@ -27,11 +27,11 @@ bash data/setup_voc.bash /path-to-data-directory
 To generate background masks:
 <br>VOC:
 ```bash
-!python3 utils/voc_bbox_setup.py --data-root /path-to-data-directory
+python3 utils/voc_bbox_setup.py --data-root /path-to-data-directory
 ```
 <br>COCO:
 ```bash
-!python3 utils/coco_bbox_setup.py --data-root /path-to-data-directory
+python3 utils/coco_bbox_setup.py --data-root /path-to-data-directory
 ```
 Once finished, the folder `data` should be like this:
 <br>VOC:
