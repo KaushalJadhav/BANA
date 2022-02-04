@@ -104,11 +104,6 @@ Change the `DATA.ROOT` and `MODEL.NUM_CLASSES` in the Stage2 config file for psu
 python3 stage2_voc_to_coco.py --config-file configs/stage2.yml --gpu-id 0
 ```
 
-Obtaining mean Average Precision (mAP) of the generated psuedolabels
-```bash
-TBD
-```
-
 ## Evaluation
 
 To evaluate the model on the validation set of Pascal VOC 2012 dataset before and after Dense CRF processing change the `DATA.MODE` parameter to `val` in the corresponding config file:
