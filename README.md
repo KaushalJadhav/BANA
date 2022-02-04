@@ -168,7 +168,7 @@ We achieve the following results:
     
 - Quantitative comparison of psuedo lables on the MS-COCO train set for model trained on Pascal VOC
     
-    | **Results on COCO train**    | **AP**   | **AP50** | **AP75** | **APs** | **APm**  | **APl**  |
+    | **Results on COCO train**    | **AP**   | **AP<sub>50</sub>** | **AP<sub>75</sub>** | **AP<sub>S</sub>** | **AP<sub>M</sub>**  | **AP<sub>L</sub>**  |
     |:----------------------------:|:---------|:--------:|:--------:|:-------:|:--------:|:--------:|
     | **BAP: Ycrf** (Authors)      | 11.7     | 28.7     | 8.0      | 3.0     | 15.0     | 27.1     |
     | **BAP: Ycrf** (Ours)         | 8.6      | 20.1     | 6.5      | 1.9     |  8.8     | 15.9     |
