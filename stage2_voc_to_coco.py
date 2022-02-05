@@ -54,7 +54,7 @@ def main(cfg):
     data_root = os.path.join(cfg.DATA.ROOT,'train2017')
     
     tr_transforms = Tr.Normalize_Caffe()
-    trainset = COCO_box(data_root,ann_path, tr_transforms)
+    trainset = COCO_box(data_root,ann_path,cfg,tr_transforms)
     train_loader = DataLoader(trainset, batch_size=1)
     
     model = Labeler(cfg.DATA.NUM_CLASSES, cfg.MODEL.ROI_SIZE, cfg.MODEL.GRID_SIZE).cuda()
