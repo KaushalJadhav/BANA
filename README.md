@@ -18,14 +18,13 @@ The code is developed and tested using `Python >= 3.6`. To install the requireme
 pip install -r requirements.txt
 ```
 
-To setup the dataset:
-<br>VOC:
+### To setup the dataset:
+VOC:
 ```bash
 bash data/setup_voc.bash /path-to-data-directory
 ```
-
-To generate background masks:
-<br>VOC:
+### To generate background masks:
+VOC:
 ```bash
 python3 utils/voc_bbox_setup.py --data-root /path-to-data-directory
 ```
@@ -34,7 +33,7 @@ python3 utils/voc_bbox_setup.py --data-root /path-to-data-directory
 python3 utils/coco_bbox_setup.py --data-root /path-to-data-directory
 ```
 Once finished, the folder `data` should be like this:
-<br>VOC:
+VOC:
 ```
     data   
     └── VOCdevkit
