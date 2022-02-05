@@ -1,6 +1,10 @@
 import numpy as np
+import torch
 import pydensecrf.densecrf as DCRF
 from pydensecrf.utils import unary_from_softmax
+from utils.metric import scores
+from tqdm import tqdm
+import torch.nn.functional as F
 
 class DENSE_CRF(object):
     def __init__(self, bi_w, bi_xy_std, bi_rgb_std, pos_w=3, pos_xy_std=3, max_iter=10):

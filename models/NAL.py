@@ -27,15 +27,14 @@ class NoiseAwareLoss(nn.Module):
         return s_class
     
     def get_correlation_map(self,feature_map,classifier_weight):
-        correlation_map = torch.zeros((feature_map.shape[0], self.num_classes, 41, 41)).cuda()
+        correlation_map = torch.zeros((feature_map.shape[0], self.num_classes, 41, 41)).cuda() 
+        correlation_map_cstar = torch.zeros((feature_map.shape[0], 321, 321)).cuda()
         for i in range(self.num_classes):
-            correlation_map[:,i,...] = 1 + self.cosine_similarity(feature_map[:,...], classifier_weight[i])
+            correlation_map[:,i,...] = 1 + self.cosine_similarity(feature_map[:,...], classifier_weight[i].unsqueeze(0))  
         correlation_map = F.interpolate(correlation_map, (321,321), mode='bilinear', align_corners=False)
         return correlation_map
     
     def get_confidence_map(self,ycrf,feature_map, classifier_weight):
-        correlation_map = self.get_correlation_map(feature_map,classifier_weight)
-        correlation_map_cstar = torch.zeros((feature_map.shape[0], 321, 321)).cuda()
         idx = (ycrf[:,:,:,None] == self.n_classes_arr)    
         idx = torch.permute(idx, (0, 3, 1, 2))  
         for i in range(self.num_classes):

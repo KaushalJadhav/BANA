@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 from .Layers import VGG16, RES101, ASPP
 from .sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
+
 
 class DeepLab_LargeFOV(nn.Module):
     def __init__(self, num_classes, is_CS=False):
@@ -52,7 +54,8 @@ class DeepLab_LargeFOV(nn.Module):
                     else:
                         params[1].append(m.bias)
         return params
-                         
+
+                            
 class DeepLab_ASPP(nn.Module):
     def __init__(self, num_classes, output_stride, sync_bn, is_CS=True):
         super().__init__()
