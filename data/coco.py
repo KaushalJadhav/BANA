@@ -9,7 +9,7 @@ from PIL import Image
 from pycocotools.coco import COCO
 
 class COCO_box(Dataset):
-    def __init__(self, root, annotation, transforms=None):
+    def __init__(self, root, annotation, cfg, transforms=None):
         self.root = root
         self.transforms = transforms
         self.coco = COCO(annotation)
@@ -20,12 +20,18 @@ class COCO_box(Dataset):
             img_ids.extend(self.coco.getImgIds(catIds=cat))   
         img_ids = list(set(img_ids))
 
-        #REMOVE GRAY IMAGE IDs
-        # gray_ids = set([431848,7888,205289,141671,274219,209222,24021,353180,61418,130465])
-        # img_ids = list(set(img_ids) - gray_ids)
-        print("Number of Images : ",len(img_ids))
+        #Removing grayscale images
+        gray_count = 0
+        for id in img_ids:
+            file_name = self.coco.loadImgs(ids=id)[0]['file_name']
+            img = np.asarray(Image.open(os.path.join(root,file_name)))
+            if img.ndim == 2:
+                img_ids.remove(id)
+                gray_count = gray_count + 1
+        print(f"Removed {gray_count} grayscale images")
+        print(" Final Number of Images : ",len(img_ids))
 
-        self.ids = [20992, 10583]
+        self.ids = img_ids
 
         cat_id_map = [-1]*91
         for i in range(0,80):
@@ -66,9 +72,7 @@ class COCO_box(Dataset):
         #converted to np array for transforms
         bboxes = np.array(bboxes).astype('float32')
         
-        #ADD MASK PATH
-        #mask_path = '/kaggle/input/coco-train-bgmaskfromboxes/BgMaskfromBoxes_coco_train/kaggle/working/BgMaskfromBoxes'
-        #mask_path = '/kaggle/input/coco-val-bgmaskfromboxes/kaggle/working/BgMaskfromBoxes'
+        mask_path = os.path.join(cfg.DATA_ROOT,'BgMaskFromBoxes')
         bg_mask = np.array(Image.open(os.path.join(mask_path,path[:-4]+'.png')), dtype=np.int32)
         
         if self.transforms is not None:
