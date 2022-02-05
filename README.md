@@ -1,6 +1,6 @@
 # [RE] Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation
 
-This repository is the PyTorch and PyTorch Lightning implementation of the paper ["Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation"](https://arxiv.org/pdf/2104.00905.pdf). It is well documented version of the original repository with the code flow available [here](). The paper address the problem of weakly-supervised semantic segmentation (WSSS) using bounding box annotations by proposing two novel methods:
+This repository is the PyTorch and PyTorch Lightning implementation of the paper ["Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation"](https://arxiv.org/pdf/2104.00905.pdf). It is well documented version of the original repository with the code flow available [here](https://github.com/karan-uppal3/BANA/blob/main/assets/codeflow.pdf). The paper address the problem of weakly-supervised semantic segmentation (WSSS) using bounding box annotations by proposing two novel methods:
 - **Background-aware pooling (BAP)**, to extract high-quality pseudo segmentation labels
 - **Noise-aware Loss (NAL)**, to make the networks less susceptible to incorrect labels
 
@@ -18,25 +18,22 @@ The code is developed and tested using `Python >= 3.6`. To install the requireme
 pip install -r requirements.txt
 ```
 
-To setup the dataset:
-<br>VOC:
+### To setup the dataset:
+VOC:
 ```bash
 bash data/setup_voc.bash /path-to-data-directory
 ```
-
-To generate background masks:
-<br>VOC:
+### To generate background masks:
+VOC:
 ```bash
-cd /path-to-data-directory
-python3 voc_bbox_setup.py
+python3 utils/voc_bbox_setup.py --data-root /path-to-data-directory
 ```
 <br>COCO:
 ```bash
-cd /path-to-data-directory
-python3 coco_bbox_setup.py
+python3 utils/coco_bbox_setup.py --data-root /path-to-data-directory
 ```
 Once finished, the folder `data` should be like this:
-<br>VOC:
+VOC:
 ```
     data   
     └── VOCdevkit
@@ -202,11 +199,11 @@ We achieve the following results:
 
 | Input Image                  | Ground Truth                | Y CRF                        | Y RET                        |
 |------------------------------|-----------------------------|------------------------------|------------------------------|
-| ![](assets/stage2/img/1.jpg) | ![](assets/stage2/gt/1.png) | ![](assets/stage2/crf/1.png) | ![](assets/stage2/ret/1.png) |
-| ![](assets/stage2/img/2.jpg) | ![](assets/stage2/gt/2.png) | ![](assets/stage2/crf/2.png) | ![](assets/stage2/ret/2.png) |
-| ![](assets/stage2/img/3.jpg) | ![](assets/stage2/gt/3.png) | ![](assets/stage2/crf/3.png) | ![](assets/stage2/ret/3.png) |
-| ![](assets/stage2/img/4.jpg) | ![](assets/stage2/gt/4.png) | ![](assets/stage2/crf/4.png) | ![](assets/stage2/ret/4.png) |
-| ![](assets/stage2/img/5.jpg) | ![](assets/stage2/gt/5.png) | ![](assets/stage2/crf/5.png) | ![](assets/stage2/ret/5.png) |
+| ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/img/1.jpg) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/gt/1.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/crf/1.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/ret/1.png) |
+| ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/img/2.jpg) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/gt/2.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/crf/2.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/ret/2.png) |
+| ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/img/3.jpg) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/gt/3.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/crf/3.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/ret/3.png) |
+| ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/img/4.jpg) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/gt/4.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/crf/4.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/ret/4.png) |
+| ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/img/5.jpg) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/gt/5.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/crf/5.png) | ![](https://github.com/karan-uppal3/BANA/blob/main/assets/stage2/ret/5.png) |
 
 ## Contributors
 
