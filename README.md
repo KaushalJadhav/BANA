@@ -212,14 +212,28 @@ We achieve the following results:
 This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.ac.in/)
 
 ## Bibtex
-```
-@inproceedings{oh2021background,
-  title     = {Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation},
-  author    = {Oh, Youngmin and Kim, Beomjun and Ham, Bumsub},
-  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
-  year      = {2021},
-}
-```
+
+- [RE] Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation
+    ```
+    @inproceedings{
+    mehta2022re,
+    title={[{RE}] Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation},
+    author={Aryan Mehta and Karan Uppal and Kaushal Jadhav and Monish Natarajan and Mradul Agrawal and Debashish Chakravarty},
+    booktitle={ML Reproducibility Challenge 2021 (Fall Edition)},
+    year={2022},
+    url={https://openreview.net/forum?id=rUQllTGQhAY}
+    }
+    ```
+
+- Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation
+    ```
+    @inproceedings{oh2021background,
+      title     = {Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation},
+      author    = {Oh, Youngmin and Kim, Beomjun and Ham, Bumsub},
+      booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+      year      = {2021},
+    }
+    ```
 
 ## Acknowledgments
 
