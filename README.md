@@ -215,13 +215,12 @@ This repository is maintained by [AGV.AI (IIT Kharagpur)](http://www.agv.iitkgp.
 
 - [RE] Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation
     ```
-    @inproceedings{
-    mehta2022re,
-    title={[{RE}] Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation},
-    author={Aryan Mehta and Karan Uppal and Kaushal Jadhav and Monish Natarajan and Mradul Agrawal and Debashish Chakravarty},
-    booktitle={ML Reproducibility Challenge 2021 (Fall Edition)},
-    year={2022},
-    url={https://openreview.net/forum?id=rUQllTGQhAY}
+    @article{Mehta:2022,
+      title = {{[Re] Background-Aware Pooling and Noise-Aware Loss for Weakly-Supervised Semantic Segmentation}},
+      author = {Mehta, Aryan and Uppal, Karan and Jadhav, Kaushal and Natarajan, Monish and Agrawal, Mradul and Chakravarty, Debashish},
+      journal = {ReScience C},
+      year = {2022},
+      doi = {10.5281/zenodo.6574677},
     }
     ```
 
